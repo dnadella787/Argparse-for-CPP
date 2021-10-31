@@ -28,10 +28,11 @@ protected:
     std::string arg_name;                      //name of argument for help message purposes
     std::string help_message;                  //help message used by parser
     std::vector<std::string> flags;            //vector of recognizable flags
-    std::string action = STORE;                //how to handle the argument
+    std::string action = NONE;                 //how to handle the argument
     int nargs = 0;                             //how many arguments to store
     std::string variable = "";                 //default value
-    std::string type = STRING;                 //variable type
+    bool required = false;
+    std::string type = NONE;                   //variable type
 
 
     //protected helper functions
@@ -51,11 +52,11 @@ public:
     void set_action(const std::string& ACTION);
     void set_nargs(const int& NARGS);
     void set_default(const std::string& DEFAULT_VALUE);
+    void set_required(const bool& REQUIRED);
     void set_variable_type(const std::string& VAR_TYPE);
 
-    //accessor member functions
-    std::string return_variable(){return variable;}
-
+    template<typename Q>
+    T operator()();
 
     void print();
 

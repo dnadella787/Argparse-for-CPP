@@ -1,3 +1,3 @@
 
-default: args.cpp args.h main.cpp
-	g++ parser.cpp args.cpp main.cpp -o ./arg 
+default: arg.cpp arg.h parser.cpp parser.h main.cpp
+	g++ -std=c++1z arg.cpp parser.cpp main.cpp -o ./arg 

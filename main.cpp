@@ -1,21 +1,19 @@
-#include "args.h"
+#include "arg.h"
 #include "parser.h"
 
-int main() {
-	argument a("name");
-	a.set_flags("-v", "--verbose", "bobby", "joe");
-	a.set_help_message("hello there");
-	a.set_action(STORE_TRUE);
-	a.set_nargs(VARIABLE);
-	a.set_default("42");
-	a.set_variable_type(BOOL);
+int main(int argc, char **argv) 
+{
+	argument a("output");
+	a.set_flags("-v", "-verbose");
+	a.set_help_message("generate full output");
 
-
-	argument b;
-	b.set_default("blah blah blah");
+	argument b("encrypt");
+	b.set_flags("-e", "--encrypt");
 
 	parser p;
-	p.add_arguments(a, b);
-	p.print_arguments();
+	p.add_arguments(a,b);
+	p.set_description("this program does many many important things");
+	p.parse_args(argc, argv);
 }
+
 

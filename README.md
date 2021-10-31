@@ -10,7 +10,7 @@ The relavent function calls for the argument class are:
 
 | Function | Description |
 |------|------|
-|argument(const std::string& ARG_NAME) | Constructor that takes in a string parameter and sets it to the name of the argument. The name of the argument is used in build the help message|
+|argument(const std::string& ARG_NAME) | Constructor that takes in a string parameter and sets it to the name of the argument. The name of the argument is used to build the help message|
 |void set_flags(const std::string& ...) | Allows you to add both relavent flags to an argument but also the positional argument name. This function uses variadic templates so any number of names can be added in at once. Also, the function must be called or otherwise the parser will return an error |
 |void set_help_message(const std::string& HELP_MESSAGE) | Function takes in a string that is set to be the help message. The help message is displayed when the -h flag is passed in and is automatically put together by the parser object. |
 |void set_action(const std::string ACTION)| This function sets how the variable is stored in the argument class. The macros to specify this are below but by default it is set to be NONE meaning nothing is stored.|

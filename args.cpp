@@ -18,8 +18,19 @@ void argument::set_default(const std::string& DEFAULT_VALUE){
 	variable = DEFAULT_VALUE;
 }
 
+void argument::set_required(const bool& REQUIRED){
+	required = REQUIRED;
+}
+
 void argument::set_variable_type(const std::string& VAR_TYPE){
 	type = VAR_TYPE;
+}
+
+template<typename Q>
+T argument::operator()(){
+	if (type == INT){
+		return std::stoi(variable);
+	}
 }
 
 void argument::print(){

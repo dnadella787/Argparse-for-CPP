@@ -1,40 +1,43 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "args.h"
+
+#include "arg.h"
+
+#define NO_DESCRIPTION "no_description"
+
 
 class parser {
 private:
     std::vector<argument> known_arguments;                      //holds all arguments
+    std::string help_message;
+    std::string prog_name = "PROG";
+    std::string description = NO_DESCRIPTION;
+    
+    void print_help();
 
-    //private helper functions
-    template<typename T, typename ... S>                        //recursive helper function
-    void add_arguments_helper(T first_arg, S ... rest_args);  
-
-    void add_arguments_helper();                                //base case
 public:
     //constructors
     parser(){} 
     
     //public member functions
-    template<typename ... T>                                    //adds all arguments to parser
-    void add_arguments(T ... arguments);
+    template<typename ... T>
+    void add_arguments(T... args);
 
-    void parse_args(const int& argc, const char* argv);         //parses args and assigns variables
+    void set_prog_name(const std::string& PROG_NAME);
+    void set_description(const std::string& DESCRIPTION);
+    void parse_args(const int& argc, char** argv);         //parses args and assigns variables
 
     void print_arguments();
 };
 
 
-template<typename T, typename ... S>
-void parser::add_arguments_helper(T first_arg, S ... rest_args){
-    known_arguments.push_back(first_arg);
-    add_arguments_helper(rest_args...);
+template<typename ... T>
+void parser::add_arguments(T... args)
+{
+    (known_arguments.push_back(args), ...);
 }
 
-template<typename ... T>
-void parser::add_arguments(T ... arguments){
-    add_arguments_helper(arguments...);
-}
+
 
 #endif 
