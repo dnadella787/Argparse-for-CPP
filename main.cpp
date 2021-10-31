@@ -4,7 +4,7 @@
 int main(int argc, char **argv) 
 {
 	argument a("output");
-	a.set_flags("-v", "-verbose");
+	a.set_flags("-v", "--verbose");
 	a.set_help_message("generate full output");
 
 	argument b("encrypt");

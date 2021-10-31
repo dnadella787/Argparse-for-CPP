@@ -19,25 +19,33 @@
 #define BOOL "bool"
 #define NONE "none"
 
+
 class argument{
 private:
-    std::string arg_name;
+    //variables
+    std::string arg_name;                      //name of argument
     std::vector<std::string> accepted_flags;   //vector of recognizable flags
-    std::string variable;                      //value
-    std::string help_message;                  //help_message
+    std::vector<std::string> variable;         //value to be stored
+    std::string help_message;                  //help message for specific argument, used by parser to generate usage 
+    std::string action = STORE;                //action, check spec for specific information
+    int n_args = 1;                            //number of arguments to be processed
+
 
 public:
     //constructors
     argument(){}                               
     argument(const std::string& ARG_NAME);     
 
+
     //public member functions to set up appropriate behavior
     template<typename ... T>
-    void set_flags(T... names);                //all acceptable cmd line flags for this argument
-
-    void set_help_message(const std::string& HELP_MESSAGE);
+    void set_flags(T... names);                             //all acceptable cmd line flags for this argument
+    void set_nargs(const int& N_ARGS);                      //set the number of arguments to be processed
+    void set_action(const std::string& ACTION);             //
+    void set_help_message(const std::string& HELP_MESSAGE); //set help message for the parser to use
    
-    friend class parser;                       //parser can access the acceptable flags to return variables
+
+    friend class parser;                                    //parser can access accepted flags and store protocol to define appropriate behavior
 };
 
 
