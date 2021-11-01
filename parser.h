@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-
 #include "arg.h"
 
 #define NO_DESCRIPTION "no_description"
@@ -17,8 +16,14 @@ private:
     
     //private helper functions used internally
     void print_help();                                          //prints help message for -h, --help
-    int match(const std::string& flag);                         //internal matching function checks if flag is legal in parse_args()
-    void parse_arg_helper();                                    //helps to store the actual variables
+
+    //parsing helper functions based on the type of action to be done
+    void setup_parsing();
+    void action_store(const int& arg_num, const int& flag_num, const int& argc, char** argv);
+    void action_store_true(const int& arg_num, const int& flag_num, const int& argc, char** argv);
+    void action_store_false(const int& arg_num, const int& flag_num, const int& argc, char** argv);
+
+    int match(const std::string& flag);                                //internal matching function checks if flag is legal in parse_args()
 
 
 public:
@@ -27,7 +32,7 @@ public:
     
     //public member functions 
     template<typename ... T>
-    void add_arguments(T... args);                              //add all argument objects to parser object
+    void add_arguments(const T&... args);                              //add all argument objects to parser object
 
     //help message related functions
     void set_prog_name(const std::string& PROG_NAME);           //set the program name
@@ -39,7 +44,7 @@ public:
 
 
 template<typename ... T>
-void parser::add_arguments(T... args)
+void parser::add_arguments(const T&... args)
 {
     (known_arguments.push_back(args), ...);
 }

@@ -6,11 +6,11 @@
 #include <iostream>
 
 //action macros
-#define STORE "store"
-#define STORE_TRUE "true" 
-#define STORE_FALSE "false" 
-#define APPEND "append"
-#define COUNT "count"
+#define STORE 1
+#define STORE_TRUE 2
+#define STORE_FALSE 3 
+#define APPEND 4
+#define COUNT 5
 
 //variable type macros
 #define STRING "string"
@@ -19,29 +19,32 @@
 #define BOOL "bool"
 #define NONE "none"
 
+//STORE_TRUE/STORE_FALSE macros
+#define STORE_T_DEFAULT "STORE_T_DEFAULT" 
+#define STORE_F_DEFAULT "STORE_F_DEFAULT"
+
 
 class argument{
 private:
     //variables
     std::string arg_name;                      //name of argument
     std::vector<std::string> accepted_flags;   //vector of recognizable flags
-    std::vector<std::string> variable;         //value to be stored
+    std::vector<std::string> data;             //value to be stored
     std::string help_message;                  //help message for specific argument, used by parser to generate usage 
-    std::string action = STORE;                //action, check spec for specific information
+    int action = STORE;                        //action, check spec for specific information
     int n_args = 1;                            //number of arguments to be processed
-
 
 public:
     //constructors
-    argument(){}                               
-    argument(const std::string& ARG_NAME);     
+    argument(){}                               //default constructor
+    argument(const std::string& ARG_NAME);     //constructor that also takes in the argument, use this one
 
 
     //public member functions to set up appropriate behavior
     template<typename ... T>
-    void set_flags(T... names);                             //all acceptable cmd line flags for this argument
+    void set_flags(const T&... names);                             //all acceptable cmd line flags for this argument
     void set_nargs(const int& N_ARGS);                      //set the number of arguments to be processed
-    void set_action(const std::string& ACTION);             //
+    void set_action(const int& ACTION);             //
     void set_help_message(const std::string& HELP_MESSAGE); //set help message for the parser to use
    
 
@@ -51,7 +54,7 @@ public:
 
 
 template<typename ... T>
-void argument::set_flags(T... names)
+void argument::set_flags(const T&... names)
 {
     (accepted_flags.push_back(names), ...);
 }
