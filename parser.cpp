@@ -2,9 +2,6 @@
 #include <string.h>
 
 
-//ERROR BEING PRODUCED N ./ARG -V FLAG1 -E FLAG1 (nothing happens)
-//BUT NO ERROR FOR ./ARG -E -V FLAG1
-
 void parser::set_prog_name(const std::string& PROG_NAME)
 {
     prog_name = PROG_NAME;
@@ -65,7 +62,7 @@ int parser::match(const std::string& flag)
                 return i;
         }
     }
-    return -2;
+    return -1;
 }
 
 
@@ -90,8 +87,11 @@ void parser::action_store(const int& arg_num, const int& flag_num, const int& ar
         return;
     }
     else if (argv[flag_num + 2][0] != '-')
+    {
         std::cerr << "too many inputs for " << argv[flag_num] << " flag" << std::endl;
         exit(-1);
+    }
+
 }
 
 
@@ -133,6 +133,17 @@ void parser::action_store_false(const int& arg_num, const int& flag_num, const i
 }
 
 
+void action_append(const int& arg_num, const int& flag_num, const int& argc, char** argv)
+{
+
+}
+
+
+void action_count(const int& arg_num, const int& flag_num, const int& argc, char** argv)
+{
+
+}
+
 void parser::parse_args(const int& argc, char** argv)
 {
     for (int i = 1; i < argc; i++)
@@ -147,7 +158,6 @@ void parser::parse_args(const int& argc, char** argv)
             int arg_num = match(argv[i]);
             if (arg_num >= 0)
             {
-                
                 if (known_arguments[arg_num].action == STORE)
                 {
                     action_store(arg_num, i, argc, argv);
@@ -160,24 +170,20 @@ void parser::parse_args(const int& argc, char** argv)
                 {
                     action_store_false(arg_num, i, argc, argv);
                 }
-                //else if (known_arguments[arg_num].action == APPEND)
+                // else if (known_arguments[arg_num].action == APPEND)
                     
-                //else if (known_arguments[arg_num].action == COUNT)
-                else
-                {
-                    std::cerr << "ERROR: " << known_arguments[arg_num].arg_name << " has an invalid action, use STORE, STORE_TRUE, STORE_FALSE, APPEND, COUNT" << std::endl;
-                    exit(-1);
-                }
+                // else if (known_arguments[arg_num].action == COUNT)
+                // else
+                // {
+                //     std::cerr << "ERROR: " << known_arguments[arg_num].arg_name << " has an invalid action, use STORE, STORE_TRUE, STORE_FALSE, APPEND, COUNT" << std::endl;
+                //     exit(-1);
+                // }
             }
             else
             {
                 std::cerr << argv[i] << " is not a recognized argument" << std::endl;
                 exit(-1);
             }
-        }
-        else
-        {
-            continue;
         }
     }
     for (argument a : known_arguments)
