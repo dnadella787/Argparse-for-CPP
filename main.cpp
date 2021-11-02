@@ -14,10 +14,15 @@ int main(int argc, char **argv)
 
 	argument c("DOTTED");
 	c.set_flags("-d", "--dotted");
-	c.set_action(STORE_FALSE);
+	c.set_action(APPEND);
+	c.set_nargs(3);
+
+	argument d("ELROND");
+	d.set_flags("-lord", "--lrond");
+	d.set_action(COUNT);
 
 	parser p;
-	p.add_arguments(a,b,c);
+	p.add_arguments(a,b,c,d);
 	p.set_description("this program does many many important things");
 	p.parse_args(argc, argv);
 }

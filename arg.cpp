@@ -24,6 +24,10 @@ void argument::set_action(const int& ACTION)
         data.push_back(STORE_F_DEFAULT);
         n_args = 0;
     }
+    else if (ACTION == COUNT)
+    {
+        n_args = 0;
+    }
     action = ACTION;
 }
 
@@ -32,3 +36,7 @@ void argument::set_help_message(const std::string& HELP_MESSAGE)
     help_message = HELP_MESSAGE;
 }
 
+void argument::set_requirement(const bool& REQUIREMENT)
+{
+    is_required = REQUIREMENT;
+}

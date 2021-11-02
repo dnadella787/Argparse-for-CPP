@@ -23,7 +23,7 @@ private:
     void action_store_true(const int& arg_num, const int& flag_num, const int& argc, char** argv);
     void action_store_false(const int& arg_num, const int& flag_num, const int& argc, char** argv);
     void action_append(const int& arg_num, const int& flag_num, const int& argc, char** argv);
-    void action_count(const int& arg_num, const int& flag_num, const int& argc, char** argv);
+    void action_count(const int& arg_num);
 
     int match(const std::string& flag);                         //internal matching function checks if flag is legal in parse_args()
 
@@ -34,7 +34,7 @@ public:
     
     //public member functions 
     template<typename ... T>
-    void add_arguments(const T&... args);                              //add all argument objects to parser object
+    void add_arguments(const T&... args);                       //add all argument objects to parser object
 
     //help message related functions
     void set_prog_name(const std::string& PROG_NAME);           //set the program name
