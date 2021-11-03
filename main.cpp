@@ -22,9 +22,18 @@ int main(int argc, char **argv)
 	d.set_action(COUNT);
 
 	parser p;
-	p.add_arguments(a,b,c,d);
+	p.add_arguments(&a,&b,&c,&d);
 	p.set_description("this program does many many important things");
 	p.parse_args(argc, argv);
+
+	std::cout << a.get_val() << std::endl;
+	std::cout << b.get_val() << std::endl;
+	std::cout << "vector: " << std::endl;
+	for (std::string s : c.get_vals())
+	{
+		std::cout << s << std::endl;
+	}
+	std::cout << d.get_val() << std::endl;
 }
 
 

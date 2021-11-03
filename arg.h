@@ -39,7 +39,6 @@ class argument{
         argument(){}                               //default constructor
         argument(const std::string& ARG_NAME);     //constructor that also takes in the argument, use this one
 
-
         //public member functions to set up appropriate behavior
         template<typename ... T>
         void set_flags(const T&... NAMES);                      //all acceptable cmd line flags for this argument
@@ -48,9 +47,16 @@ class argument{
         void set_help_message(const std::string& HELP_MESSAGE); //set help message for the parser to use
         void set_requirement(const bool& REQUIREMENT);          //set the requirement, causes error if a required flag is not passed in
     
+        //public member functions to get the desired value based on type
+        std::string get_val();                                  //for use on action STORE
+        bool is_used();                                         //for use on action STORE_FALSE or STORE_TRUE
+        std::vector<std::string> get_vals();                    //for use on action APPEND
+        int get_count();                                        //for use on action COUNT
+        bool is_empty();                                        //use to check if an argument of action STORE_APPEND has data inputted in or not
 
         friend class parser;                                    //parser can access accepted flags and store protocol to define appropriate behavior
 };
+
 
 
 

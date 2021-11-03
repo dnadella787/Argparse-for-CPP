@@ -19,11 +19,11 @@ void parser::print_help()
     for (auto x : known_arguments)
     {
         std::cout << "[";
-        for (int i = 0; i < x.accepted_flags.size() - 1; i++)
+        for (int i = 0; i < x->accepted_flags.size() - 1; i++)
         {
-            std::cout << " " << x.accepted_flags[i] << " |";
+            std::cout << " " << x->accepted_flags[i] << " |";
         }
-        std::cout << " " << x.accepted_flags.back();
+        std::cout << " " << x->accepted_flags.back();
         std::cout << " ] ";
     }
     
@@ -40,12 +40,12 @@ void parser::print_help()
     for (auto x : known_arguments)
     {
         std::cout << "  ";
-        for (int i = 0; i < x.accepted_flags.size() - 1; i++)
+        for (int i = 0; i < x->accepted_flags.size() - 1; i++)
         {
-            std::cout << x.accepted_flags[i] << ", ";
+            std::cout << x->accepted_flags[i] << ", ";
         }
-        std::cout << x.accepted_flags.back() << "    ";
-        std::cout << x.help_message << std::endl;
+        std::cout << x->accepted_flags.back() << "    ";
+        std::cout << x->help_message << std::endl;
     }
 
     std::cout << "  " << "-h, --help    generates this help/usage message" << std::endl;
@@ -56,7 +56,7 @@ int parser::match(const std::string& flag)
 {
     for (int i = 0; i < known_arguments.size(); i++)
     {
-        for (std::string arg : known_arguments[i].accepted_flags)
+        for (std::string arg : known_arguments[i]->accepted_flags)
         {
             if (arg == flag)
                 return i;
@@ -80,7 +80,10 @@ void parser::action_store(const int& arg_num, const int& flag_num, const int& ar
     }
     else
     {
-        known_arguments[arg_num].data.push_back(argv[flag_num + 1]);
+        if (known_arguments[arg_num]->data.size() == 0)
+            known_arguments[arg_num]->data.push_back(argv[flag_num + 1]);
+        else
+            known_arguments[arg_num]->data[0] = argv[flag_num + 1];
     }
     if (flag_num + 2 == argc)
     {
@@ -99,7 +102,7 @@ void parser::action_store_true(const int& arg_num, const int& flag_num, const in
 {   
     if (flag_num + 1 == argc)
     {
-        known_arguments[arg_num].data[0] = STORE_F_DEFAULT;
+        known_arguments[arg_num]->data[0] = STORE_F_DEFAULT;
         return;
     }
     if (argv[flag_num + 1][0] != '-')
@@ -109,7 +112,7 @@ void parser::action_store_true(const int& arg_num, const int& flag_num, const in
     }
     else 
     {
-        known_arguments[arg_num].data[0] = STORE_F_DEFAULT;
+        known_arguments[arg_num]->data[0] = STORE_F_DEFAULT;
     }
 }
 
@@ -118,7 +121,7 @@ void parser::action_store_false(const int& arg_num, const int& flag_num, const i
 {   
     if (flag_num + 1 == argc)
     {
-        known_arguments[arg_num].data[0] = STORE_T_DEFAULT;
+        known_arguments[arg_num]->data[0] = STORE_T_DEFAULT;
         return;
     }
     if (argv[flag_num + 1][0] != '-')
@@ -128,19 +131,19 @@ void parser::action_store_false(const int& arg_num, const int& flag_num, const i
     }
     else 
     {
-        known_arguments[arg_num].data[0] = STORE_T_DEFAULT;
+        known_arguments[arg_num]->data[0] = STORE_T_DEFAULT;
     }
 }
 
 
 void parser::action_append(const int& arg_num, const int& flag_num, const int& argc, char** argv)
 {
-    if (known_arguments[arg_num].n_args + flag_num >= argc)
+    if (known_arguments[arg_num]->n_args + flag_num >= argc)
     {
         std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
         exit(-1);
     }
-    for (int i = 1; i < known_arguments[arg_num].n_args + 1; i++)
+    for (int i = 1; i < known_arguments[arg_num]->n_args + 1; i++)
     {
         if (argv[flag_num + i][0] == '-')
         {
@@ -149,14 +152,14 @@ void parser::action_append(const int& arg_num, const int& flag_num, const int& a
         }
         else
         {
-            known_arguments[arg_num].data.push_back(argv[flag_num + i]);
+            known_arguments[arg_num]->data.push_back(argv[flag_num + i]);
         }
     }
-    if (flag_num + known_arguments[arg_num].n_args + 1 == argc)
+    if (flag_num + known_arguments[arg_num]->n_args + 1 == argc)
     {
         return;
     }
-    else if (argv[flag_num + known_arguments[arg_num].n_args + 1][0] != '-')
+    else if (argv[flag_num + known_arguments[arg_num]->n_args + 1][0] != '-')
     {
         std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
         exit(-1);
@@ -164,9 +167,17 @@ void parser::action_append(const int& arg_num, const int& flag_num, const int& a
 }
 
 
-void parser::action_count(const int& arg_num)
+void parser::action_count(const int& arg_num, const int& flag_num, const int& argc, char** argv)
 {
-    known_arguments[arg_num].count++;
+    known_arguments[arg_num]->count++;
+    if (flag_num + 1 == argc)
+        return;
+    else if (argv[flag_num + 1][0] != '-')
+    {
+        std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag" << std::endl;
+        exit(-1);
+    }
+    return;
 }
 
 void parser::parse_args(const int& argc, char** argv)
@@ -183,29 +194,29 @@ void parser::parse_args(const int& argc, char** argv)
             int arg_num = match(argv[i]);
             if (arg_num >= 0)
             {
-                if (known_arguments[arg_num].action == STORE)
+                if (known_arguments[arg_num]->action == STORE)
                 {
                     action_store(arg_num, i, argc, argv);
                 }
-                else if (known_arguments[arg_num].action == STORE_TRUE)
+                else if (known_arguments[arg_num]->action == STORE_TRUE)
                 {
                     action_store_true(arg_num, i, argc, argv);
                 }
-                else if (known_arguments[arg_num].action == STORE_FALSE)
+                else if (known_arguments[arg_num]->action == STORE_FALSE)
                 {
                     action_store_false(arg_num, i, argc, argv);
                 }
-                else if (known_arguments[arg_num].action == APPEND)
+                else if (known_arguments[arg_num]->action == APPEND)
                 {
                     action_append(arg_num, i, argc, argv);
                 }
-                else if (known_arguments[arg_num].action == COUNT)
+                else if (known_arguments[arg_num]->action == COUNT)
                 {
-                    action_count(arg_num);
+                    action_count(arg_num, i, argc, argv);
                 }
                 else
                 {
-                    std::cerr << "ERROR: " << known_arguments[arg_num].arg_name << " has an invalid action, use STORE, STORE_TRUE, STORE_FALSE, APPEND, COUNT" << std::endl;
+                    std::cerr << "ERROR: " << known_arguments[arg_num]->arg_name << " has an invalid action, use STORE, STORE_TRUE, STORE_FALSE, APPEND, COUNT" << std::endl;
                     exit(-1);
                 }
             }
@@ -217,16 +228,16 @@ void parser::parse_args(const int& argc, char** argv)
         }
     }
 
-    for (argument a : known_arguments)
+    for (argument *a : known_arguments)
     {
-        if (a.is_required && a.data.size() == 0 && a.action != COUNT)
+        if (a->is_required && a->data.size() == 0 && a->action != COUNT)
         {
-            std::cerr << "ERROR: " << a.accepted_flags[0] << " is a required argument." << std::endl;
+            std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required argument." << std::endl;
             exit(-1);
         }
-        else if (a.is_required && a.count == 0 && a.action == COUNT)
+        else if (a->is_required && a->count == 0 && a->action == COUNT)
         {
-            std::cerr << "ERROR: " << a.accepted_flags[0] << " is a required COUNT action argument" << std::endl;
+            std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required COUNT action argument" << std::endl;
             exit(-1);
         }
     }

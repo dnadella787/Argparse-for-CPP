@@ -1,10 +1,10 @@
 
 Currently working on:
- - getting parser/argument objects to return value to be used
  - updating function descriptions on README
- - update the print_help function
  - work on efficiency
 
+
+THESE FUNCTIONS ARE NOT UP TO DATE ANYMORE, this has had a complete overhaul I will update soon :)
 Parsing itself is done.
 
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
