@@ -11,10 +11,9 @@
 #define STORE_FALSE 3 
 #define APPEND 4
 #define COUNT 5
+#define VAR_APPEND 6
 
 //return_value() macros
-#define SINGLE 1
-#define VECTOR 'v'
 #define NO_INPUT "NO_INPUT"
 
 //STORE_TRUE/STORE_FALSE macros
@@ -48,9 +47,9 @@ class argument{
         void set_requirement(const bool& REQUIREMENT);          //set the requirement, causes error if a required flag is not passed in
     
         //public member functions to get the desired value based on type
-        std::string get_val();                                  //for use on action STORE
-        bool is_used();                                         //for use on action STORE_FALSE or STORE_TRUE
-        std::vector<std::string> get_vals();                    //for use on action APPEND
+        std::string get_store();                                //for use on action STORE
+        bool get_store_tf();                                    //for use on action STORE_FALSE or STORE_TRUE
+        std::vector<std::string> get_append();                  //for use on action APPEND
         int get_count();                                        //for use on action COUNT
         bool is_empty();                                        //use to check if an argument of action STORE_APPEND has data inputted in or not
 

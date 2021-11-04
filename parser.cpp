@@ -180,6 +180,7 @@ void parser::action_count(const int& arg_num, const int& flag_num, const int& ar
     return;
 }
 
+
 void parser::parse_args(const int& argc, char** argv)
 {
     for (int i = 1; i < argc; i++)
@@ -187,7 +188,7 @@ void parser::parse_args(const int& argc, char** argv)
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
             print_help();
-            return;
+            exit(0);
         }
         if (argv[i][0] == '-')
         {

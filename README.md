@@ -1,7 +1,6 @@
 
 Currently working on:
- - more thorough testing
- - better build system, portability
+ - portability as a library
  - updating function descriptions on README
  - work on efficiency
 

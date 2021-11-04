@@ -34,7 +34,7 @@ public:
     
     //public member functions 
     template<typename ... T>
-    void add_arguments(T... args);                       //add all argument objects to parser object
+    void add_arguments(T... args);                              //add all argument objects to parser object
 
     //help message related functions
     void set_prog_name(const std::string& PROG_NAME);           //set the program name

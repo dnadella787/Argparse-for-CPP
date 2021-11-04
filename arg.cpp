@@ -41,7 +41,7 @@ void argument::set_requirement(const bool& REQUIREMENT)
     is_required = REQUIREMENT;
 }
 
-std::string argument::get_val()
+std::string argument::get_store()
 {
     if (action != STORE)
     {
@@ -55,7 +55,7 @@ std::string argument::get_val()
     return data[0];
 }
 
-std::vector<std::string> argument::get_vals()
+std::vector<std::string> argument::get_append()
 {
     if (action != APPEND)
     {
@@ -75,20 +75,12 @@ int argument::get_count()
     return count;
 }
 
-bool argument::is_used()
+bool argument::get_store_tf()
 {
     if (action == STORE_FALSE)
-    {
-        if (data[0] != STORE_F_DEFAULT)
-            return true;
-        return false;
-    }
+        return (data[0] != STORE_F_DEFAULT);
     else if (action == STORE_TRUE)
-    {
-        if (data[0] != STORE_T_DEFAULT)
-            return true;
-        return false;
-    }
+        return (data[0] != STORE_T_DEFAULT);
     else
     {
         std::cerr << "ERROR: " << arg_name << " does not have action STORE_FALSE or STORE_TRUE, cannot use is_used()" << std::endl;
@@ -100,13 +92,13 @@ bool argument::is_empty()
 {
     if (action == STORE )
     {
-        if (get_val() == NO_INPUT)
+        if (get_store() == NO_INPUT)
             return true;
         return false;
     }
     else if (action == APPEND)
     {
-        if (get_vals().size() == 0)
+        if (get_append().size() == 0)
             return true;
         return false;
     }
