@@ -11,86 +11,86 @@ To create a positional argument you must set the nargs to be 0 (which it is by d
 
 Argument Class Functions:
 
-        argument(std::string)
+    argument(std::string)
 
-    initialize the argument object with a name as the parameter. The name is useful for the help message and error outputs but is not necessary.
+initialize the argument object with a name as the parameter. The name is useful for the help message and error outputs but is not necessary.
 
-        void set_flags(std::string ...)
+    void set_flags(std::string ...)
 
-    Add all allowable command line flags to the argument class. You can add in as many at one time as needed.
+Add all allowable command line flags to the argument class. You can add in as many at one time as needed.
 
-        void set_nargs(int)
+    void set_nargs(int)
 
-    Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it.
+Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it.
 
-        void set_requirement(bool)
+    void set_requirement(bool)
 
-    Specified whether the argument must be specified on command line. The requirement is false by default but you can change it by setting it to set_requirement(true). 
+Specified whether the argument must be specified on command line. The requirement is false by default but you can change it by setting it to set_requirement(true). 
 
-        std::string get_store()
+    std::string get_store()
 
-    Returns a string of the value specified for the flag. Can only be used for action STORE, else error will be raised. If there is no input, then the macro NO_INPUT is returned but it is best to check if this has ocurred using the function is_empty() 
+Returns a string of the value specified for the flag. Can only be used for action STORE, else error will be raised. If there is no input, then the macro NO_INPUT is returned but it is best to check if this has ocurred using the function is_empty() 
 
-        bool get_store_tf()
+    bool get_store_tf()
 
-    Returns the value that is stored based on the actions STORE_TRUE or STORE_FALSE. If it is STORE_TRUE and the flag is specified, then it returns true, else false. The case for STORE_FALSE is similar. Can only be used with the action STORE_TRUE or STORE_FALSE, otherwise an error will happen.
-        
-        std::vector<std::string> get_append()
+Returns the value that is stored based on the actions STORE_TRUE or STORE_FALSE. If it is STORE_TRUE and the flag is specified, then it returns true, else false. The case for STORE_FALSE is similar. Can only be used with the action STORE_TRUE or STORE_FALSE, otherwise an error will happen.
+    
+    std::vector<std::string> get_append()
 
-    Returns a vector of strings with all processed inputs. If no inputs are specified it will return an empty vector but it is best to check this using is_empty(). If the action of the argument is not APPEND then it will raise an error.
+Returns a vector of strings with all processed inputs. If no inputs are specified it will return an empty vector but it is best to check this using is_empty(). If the action of the argument is not APPEND then it will raise an error.
 
-        int get_count()
+    int get_count()
 
-    Returns the number of times an argument has been specified. Can only be used with action COUNT.
+Returns the number of times an argument has been specified. Can only be used with action COUNT.
 
-        bool is_empty()
+    bool is_empty()
 
-    Used with the action STORE and APPEND. If no input is specified in either case the function returns true, else false.
+Used with the action STORE and APPEND. If no input is specified in either case the function returns true, else false.
 
-        void set_action(MACRO)
+    void set_action(MACRO)
 
-    This defines how the argument will be parsed by the parser object. There are 5 different possible actions included below.
+This defines how the argument will be parsed by the parser object. There are 5 different possible actions included below.
 
 Possible set_action MACROS:
 
-        STORE
+    STORE
 
-    n_args is set to 1 and exactly one variable after any of the allowable flags is allowed. If the flag is used more than once then it overwrites the variable. If you do not want overwrites to be allowed, use the action APPEND instead and check the size of the returned vector from get_append()
+n_args is set to 1 and exactly one variable after any of the allowable flags is allowed. If the flag is used more than once then it overwrites the variable. If you do not want overwrites to be allowed, use the action APPEND instead and check the size of the returned vector from get_append()
 
-        STORE_TRUE or STORE_FALSE
+    STORE_TRUE or STORE_FALSE
 
-    If the flag is passed in, then the argument is stored as true and false for STORE_TRUE and STORE_FALSE respectively. n_args is set to 1 and any input after the flag will raise error.
+If the flag is passed in, then the argument is stored as true and false for STORE_TRUE and STORE_FALSE respectively. n_args is set to 1 and any input after the flag will raise error.
 
-        APPEND
+    APPEND
 
-    n_args number of inputs will be taken in after the acceptable flag and stored. If you try to use the flag more than once it will raise an error, will not overwrite. If less than n_arg inputs or more are passed in, an error will be raised.
+n_args number of inputs will be taken in after the acceptable flag and stored. If you try to use the flag more than once it will raise an error, will not overwrite. If less than n_arg inputs or more are passed in, an error will be raised.
 
-        COUNT
+    COUNT
 
-    Counts the number of times the flag has been specified on the command line. It is 0 by default and if any inputs are specified after the flag, it will raise an error.
+Counts the number of times the flag has been specified on the command line. It is 0 by default and if any inputs are specified after the flag, it will raise an error.
 
 
 Parser Object Functions:
 
-        parser()
+    parser()
 
-    Default constructor for parser, there is no constructor that take parameters for this object.
+Default constructor for parser, there is no constructor that take parameters for this object.
 
-        void add_arguments(argument*...)
+    void add_arguments(argument*...)
 
-    Allows you to add all arguments to the parser object with as many arguments as possible. NOTE: they must be pointers to arguments, not the actual argument.
+Allows you to add all arguments to the parser object with as many arguments as possible. NOTE: they must be pointers to arguments, not the actual argument.
 
-        void set_prog_name(std::string)
+    void set_prog_name(std::string)
 
-    Allows user to set the program name used for the help message.
+Allows user to set the program name used for the help message.
 
-        void set_description(std::string)
+    void set_description(std::string)
 
-    Allows user to set the description of the program, used in the help message.
+Allows user to set the description of the program, used in the help message.
 
-        void parse_args(int argc, char** argv)
+    void parse_args(int argc, char** argv)
 
-    This doeos the actual parsing. NOTE: you must call this function before using any of the get_[ACTION]() functions to get actual output. argc and argv are the same that are used for the main function when accessing command line arguments.
+This doeos the actual parsing. NOTE: you must call this function before using any of the get_[ACTION]() functions to get actual output. argc and argv are the same that are used for the main function when accessing command line arguments.
 
     
 Example Code:
