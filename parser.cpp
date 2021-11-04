@@ -1,4 +1,4 @@
-#include "parser.h"
+    #include "parser.h"
 #include <string.h>
 
 
@@ -138,6 +138,12 @@ void parser::action_store_false(const int& arg_num, const int& flag_num, const i
 
 void parser::action_append(const int& arg_num, const int& flag_num, const int& argc, char** argv)
 {
+    if (known_arguments[arg_num]->data.size() == known_arguments[arg_num]->n_args)
+    {
+        std::cerr << "ERROR: " << argv[flag_num] << " already has input, cannot input twice" << std::endl;
+        exit(-1);
+    }
+
     if (known_arguments[arg_num]->n_args + flag_num >= argc)
     {
         std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
