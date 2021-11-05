@@ -1,8 +1,6 @@
-
-Currently working on:
- - portability as a library
-
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
+
+working on adding '=' support for flags
 
 There is an argument class that is similar to the python add_argument method except that each argument must be initialized as an argument object first and then added to the parser object. 
 
@@ -98,9 +96,8 @@ Example Code:
     #include <string>
     #include <iostream>
 
+    #include "argparser.h"
 
-    #include "arg.h"
-    #include "parser.h"
 
     int main(int argc, char **argv) 
     {
