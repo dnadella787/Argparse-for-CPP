@@ -1,15 +1,15 @@
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
 
-working on adding '=' support for flags
 
 There is an argument class that is similar to the python add_argument method except that each argument must be initialized as an argument object first and then added to the parser object. 
+
 
 Important Notes:
 To create a positional argument you must set the nargs to be 0 (which it is by default) and add the name of the positional argument via set_flags(). You must also set the action to be STORE. 
 
 Argument Class Functions:
 
-    argument(std::string)
+    argument::argument(std::string)
 
 initialize the argument object with a name as the parameter. The name is useful for the help message and error outputs but is not necessary.
 
@@ -17,35 +17,35 @@ initialize the argument object with a name as the parameter. The name is useful 
 
 Add all allowable command line flags to the argument class. You can add in as many at one time as needed.
 
-    void set_nargs(int)
+    void argument::set_nargs(int)
 
 Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it.
 
-    void set_requirement(bool)
+    void argument::set_requirement(bool)
 
 Specified whether the argument must be specified on command line. The requirement is false by default but you can change it by setting it to set_requirement(true). 
 
-    std::string get_store()
+    std::string argument::get_store()
 
 Returns a string of the value specified for the flag. Can only be used for action STORE, else error will be raised. If there is no input, then the macro NO_INPUT is returned but it is best to check if this has ocurred using the function is_empty() 
 
-    bool get_store_tf()
+    bool argument::get_store_tf()
 
 Returns the value that is stored based on the actions STORE_TRUE or STORE_FALSE. If it is STORE_TRUE and the flag is specified, then it returns true, else false. The case for STORE_FALSE is similar. Can only be used with the action STORE_TRUE or STORE_FALSE, otherwise an error will happen.
     
-    std::vector<std::string> get_append()
+    std::vector<std::string> argument::get_append()
 
 Returns a vector of strings with all processed inputs. If no inputs are specified it will return an empty vector but it is best to check this using is_empty(). If the action of the argument is not APPEND then it will raise an error.
 
-    int get_count()
+    int argument::get_count()
 
 Returns the number of times an argument has been specified. Can only be used with action COUNT.
 
-    bool is_empty()
+    bool argument::is_empty()
 
 Used with the action STORE and APPEND. If no input is specified in either case the function returns true, else false.
 
-    void set_action(MACRO)
+    void argument::set_action(MACRO)
 
 This defines how the argument will be parsed by the parser object. There are 5 different possible actions included below.
 
@@ -53,7 +53,7 @@ Possible set_action MACROS:
 
     STORE
 
-n_args is set to 1 and exactly one variable after any of the allowable flags is allowed. If the flag is used more than once then it overwrites the variable. If you do not want overwrites to be allowed, use the action APPEND instead and check the size of the returned vector from get_append()
+n_args is set to 1 and exactly one variable after any of the allowable flags is allowed. If the flag is used more than once then it overwrites the variable. If you do not want overwrites to be allowed, use the action APPEND instead and check the size of the returned vector from get_append(). This is the only type of action that allows '=' in the flag like "-f=filename".
 
     STORE_TRUE or STORE_FALSE
 
@@ -70,23 +70,23 @@ Counts the number of times the flag has been specified on the command line. It i
 
 Parser Object Functions:
 
-    parser()
+    parser::parser()
 
 Default constructor for parser, there is no constructor that take parameters for this object.
 
-    void add_arguments(argument*...)
+    void parser::add_arguments(argument*...)
 
 Allows you to add all arguments to the parser object with as many arguments as possible. NOTE: they must be pointers to arguments, not the actual argument.
 
-    void set_prog_name(std::string)
+    void parser::set_prog_name(std::string)
 
 Allows user to set the program name used for the help message.
 
-    void set_description(std::string)
+    void parser::set_description(std::string)
 
 Allows user to set the description of the program, used in the help message.
 
-    void parse_args(int argc, char** argv)
+    void parser::parse_args(int argc, char** argv)
 
 This doeos the actual parsing. NOTE: you must call this function before using any of the get_[ACTION]() functions to get actual output. argc and argv are the same that are used for the main function when accessing command line arguments.
 
