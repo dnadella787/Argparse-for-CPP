@@ -1,5 +1,6 @@
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
 
+Currently working on adding unit tests and functionality for negative numbers and variability of number of args for a flag.
 
 There is an argument class that is similar to the python add_argument method except that each argument must be initialized as an argument object first and then added to the parser object. 
 
