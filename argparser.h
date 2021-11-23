@@ -167,7 +167,7 @@ bool argument::get_store_tf()
         return (data[0] != STORE_T_DEFAULT);
     else
     {
-        std::cerr << "ERROR: " << arg_name << " does not have action STORE_FALSE or STORE_TRUE, cannot use is_used()" << std::endl;
+        std::cerr << "ERROR: " << arg_name << " does not have action STORE_FALSE or STORE_TRUE, cannot use get_store_tf()" << std::endl;
         exit(EXIT_FAILURE);
     }
 }
@@ -504,8 +504,11 @@ void parser::parse_args(const int& argc, char** argv)
         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
         {
             print_help();
-            exit(0);
+            exit(EXIT_SUCCESS);
         }
+    }
+    for (int i = 1; i < argc; i++)
+    {
         if (argv[i][0] == '-')
         {
             int equal_iter = find_equal(argv[i]);
@@ -548,15 +551,23 @@ void parser::parse_args(const int& argc, char** argv)
 
     for (argument *a : known_arguments)
     {
-        if (a->is_required && a->data.size() == 0 && a->action != COUNT)
+        if (a->is_required)
         {
-            std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required argument." << std::endl;
-            exit(EXIT_FAILURE);
-        }
-        else if (a->is_required && a->count == 0 && a->action == COUNT)
-        {
-            std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required COUNT action argument" << std::endl;
-            exit(EXIT_FAILURE);
+            if (a->action == COUNT && a->count == 0)
+            {
+                std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required COUNT action argument" << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            else if (a->action == STORE && a->data[0] == NO_INPUT)
+            {
+                std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required STORE argument." << std::endl;
+                exit(EXIT_FAILURE);
+            }
+            else if (a->data.size() == 0)
+            {
+                std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required argument." << std::endl;
+                exit(EXIT_FAILURE);
+            }
         }
     }
 }
