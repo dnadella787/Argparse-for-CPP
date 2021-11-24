@@ -3,6 +3,6 @@ install:
 	cp -r argparser /usr/local/include 
 
 uninstall:
-	rm /usr/local/include/argparser.h 
+	rm -rf /usr/local/include/argparser 
 
 

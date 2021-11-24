@@ -96,8 +96,7 @@ Example Code:
 
     #include <string>
     #include <iostream>
-
-    #include "argparser.h"
+    #include <argparser/argparser.h>
 
 
     int main(int argc, char **argv) 
