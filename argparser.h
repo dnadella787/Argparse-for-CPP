@@ -129,7 +129,7 @@ std::string argument::get_store()
 {
     if (action != STORE)
     {
-        std::cerr << "ERROR: " << arg_name << " does not have action STORE, cannot use get_val()" << std::endl;
+        std::cerr << "ERROR: " << arg_name << " does not have action STORE, cannot use get_store()" << std::endl;
         exit(EXIT_FAILURE);
     }
     
@@ -141,7 +141,7 @@ std::vector<std::string> argument::get_append()
 {
     if (action != APPEND)
     {
-        std::cerr << "ERROR: " << arg_name << " does not have action APPEND, cannot use get_vals()" << std::endl;
+        std::cerr << "ERROR: " << arg_name << " does not have action APPEND, cannot use get_append()" << std::endl;
         exit(EXIT_FAILURE);
     }
     return data;
@@ -296,11 +296,23 @@ void parser::print_help()
         {
             std::cout << x->accepted_flags[i] << ", ";
         }
-        std::cout << x->accepted_flags.back() << "    ";
-        std::cout << x->help_message << std::endl;
+        std::cout << x->accepted_flags.back() << "   ==>   "; 
+        if (x->action == STORE)
+        {
+            std::cout << x->help_message << " (usage: ";
+            std::cout << x->accepted_flags[0] << "=[input] or ";
+            std::cout << x->accepted_flags[0] << " [input])" << std::endl << std::endl;
+        }
+        else if (x->action == APPEND)
+        {
+            std::cout << x->help_message << " (usage: ";
+            std::cout << x->accepted_flags[0] << " [input1] ... [inputk])" << std::endl << std::endl;
+        }
+        else 
+            std::cout << x->help_message << std::endl << std::endl;
     }
 
-    std::cout << "  " << "-h, --help    generates this help/usage message" << std::endl;
+    std::cout << "  " << "-h, --help   ==>   generates this help/usage message" << std::endl;
 }
 
 
@@ -334,11 +346,13 @@ void parser::action_store(const int& arg_num, const int& flag_num, const int& ar
     if (flag_num + 1 == argc)
     {
         std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     else if (argv[flag_num + 1][0] == '-')
     {
         std::cerr << "ERROR: input expected for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     else
@@ -352,6 +366,7 @@ void parser::action_store(const int& arg_num, const int& flag_num, const int& ar
     else if (argv[flag_num + 2][0] != '-')
     {
         std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
 }
@@ -362,21 +377,25 @@ void parser::equal_action_store(const int& arg_num, const int& flag_num, const i
     if (known_arguments[arg_num]->action != STORE)
     {
         std::cerr << "ERROR: " << argv[flag_num] << " flag is not action STORE, can't use '='" << std::endl;
+        print_help();
+        exit(EXIT_FAILURE);
+    }
+    if (argv[flag_num][equal_iter + 1] == '\0')
+    {
+        std::cerr << "ERROR: no input after = for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
     {
         std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
-    if (strlen(&argv[flag_num][equal_iter + 1]) == 0)
-        known_arguments[arg_num]->data[0] = NO_INPUT;
-    else 
-        known_arguments[arg_num]->data[0] = &argv[flag_num][equal_iter + 1];
+    known_arguments[arg_num]->data[0] = &argv[flag_num][equal_iter + 1];
     
     if (flag_num + 1 == argc)
         return;
-    
 }
 
 
@@ -390,6 +409,7 @@ void parser::action_store_true(const int& arg_num, const int& flag_num, const in
     if (argv[flag_num + 1][0] != '-')
     {
         std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag, action STORE_TRUE" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     else 
@@ -409,6 +429,7 @@ void parser::action_store_false(const int& arg_num, const int& flag_num, const i
     if (argv[flag_num + 1][0] != '-')
     {
         std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag, action STORE_FALSE" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     else 
@@ -423,12 +444,14 @@ void parser::action_append(const int& arg_num, const int& flag_num, const int& a
     if (known_arguments[arg_num]->data.size() == known_arguments[arg_num]->n_args)
     {
         std::cerr << "ERROR: " << argv[flag_num] << " already has input, cannot input twice" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
 
     if (known_arguments[arg_num]->n_args + flag_num >= argc)
     {
         std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     for (int i = 1; i < known_arguments[arg_num]->n_args + 1; i++)
@@ -436,6 +459,7 @@ void parser::action_append(const int& arg_num, const int& flag_num, const int& a
         if (argv[flag_num + i][0] == '-')
         {
             std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
+            print_help();
             exit(EXIT_FAILURE);
         }
         else
@@ -450,6 +474,7 @@ void parser::action_append(const int& arg_num, const int& flag_num, const int& a
     else if (argv[flag_num + known_arguments[arg_num]->n_args + 1][0] != '-')
     {
         std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
 }
@@ -463,6 +488,7 @@ void parser::action_count(const int& arg_num, const int& flag_num, const int& ar
     else if (argv[flag_num + 1][0] != '-')
     {
         std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
     return;
@@ -492,6 +518,7 @@ void parser::do_action(const int& arg_num, const int& flag_num, const int& argc,
     else
     {
         std::cerr << "ERROR: " << known_arguments[arg_num]->arg_name << " has an invalid action, use STORE, STORE_TRUE, STORE_FALSE, APPEND, COUNT" << std::endl;
+        print_help();
         exit(EXIT_FAILURE);
     }
 }
@@ -523,12 +550,14 @@ void parser::parse_args(const int& argc, char** argv)
                     else 
                     {
                         std::cerr << "ERROR: '=' can only be used for single input arguments like -f=file" << std::endl;
+                        print_help();
                         exit(EXIT_FAILURE);
                     }
                 }
                 else
                 {
                     std::cerr << "ERROR: " << actual_flag << " is not a recognized flag." << std::endl;
+                    print_help();
                     exit(EXIT_FAILURE);
                 }
             }
@@ -542,10 +571,10 @@ void parser::parse_args(const int& argc, char** argv)
                 else
                 {
                     std::cerr << "ERROR: " << argv[i] << " is not a recognized argument" << std::endl;
+                    print_help();
                     exit(EXIT_FAILURE);
                 }
             }
-
         }
     }
 
@@ -556,16 +585,19 @@ void parser::parse_args(const int& argc, char** argv)
             if (a->action == COUNT && a->count == 0)
             {
                 std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required COUNT action argument" << std::endl;
+                print_help();
                 exit(EXIT_FAILURE);
             }
             else if (a->action == STORE && a->data[0] == NO_INPUT)
             {
                 std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required STORE argument." << std::endl;
+                print_help();
                 exit(EXIT_FAILURE);
             }
             else if (a->data.size() == 0)
             {
                 std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required argument." << std::endl;
+                print_help();
                 exit(EXIT_FAILURE);
             }
         }
