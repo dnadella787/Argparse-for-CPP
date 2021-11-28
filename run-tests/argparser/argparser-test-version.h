@@ -25,6 +25,12 @@
 #define NO_DESCRIPTION "no_description"
 
 
+/*
+THIS IS CODE FOR THE TEST SUITE EXCLUSIVELY, IT HAS SOME EXTRA HELPER FUNCTIONS
+AND SCOPE CHANGES FOR TESTING PURPOSES, ALL OTHER CODE/FUNCTIONALITY IS EXACT 
+SAME
+*/
+
 
 /*
 *****************************
@@ -34,7 +40,7 @@
 
 
 class argument{
-private:
+public:
     //variables
     std::string arg_name;                      //name of argument
     std::vector<std::string> accepted_flags;   //vector of recognizable flags
@@ -45,7 +51,6 @@ private:
     int count = 0;                             //number of times the flag has been specified 
     bool is_required = false;                  //if the flag is required or not, false by default
 
-public:
     //constructors
     argument(){}                               //default constructor
     argument(const std::string& ARG_NAME);     //constructor that also takes in the argument, use this one
@@ -202,9 +207,9 @@ inline bool argument::is_empty()
 ******************************
 */
 
-class parser 
-{
-private:
+class parser {
+public:
+
     //member variables
     std::vector<argument*> known_arguments;                     //holds pointers to all arguments
     std::string prog_name = "PROG";                             //program name, for help message
@@ -227,7 +232,7 @@ private:
     int find_equal(const std::string& input);                   //checks if there is = present in the flag
     
 
-public:
+
     //constructors
     parser(){} 
     
