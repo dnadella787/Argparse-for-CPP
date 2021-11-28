@@ -11,7 +11,7 @@ To install, simply run:
 
 To run tests:
 
-    sudo make tests
+    make tests
 
 important to note that this will produce a "build" directry in run-tests which will have the test executable "./argparser" and all of the CMake dependencies.
 
