@@ -1,12 +1,21 @@
-An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
+An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
 
-Currently working on adding unit tests and functionality for negative numbers and variability of number of args for a flag.
+Currently working on adding functionality for negative numbers and variability of number of args for a flag.
 
 There is an argument class that is similar to the python add_argument method except that each argument must be initialized as an argument object first and then added to the parser object. 
 
+To install, simply run:
 
-Important Notes:
-To create a positional argument you must set the nargs to be 0 (which it is by default) and add the name of the positional argument via set_flags(). You must also set the action to be STORE. 
+    sudo make install 
+
+To run tests:
+
+    sudo make tests
+
+important to note that this will produce a "build" directry in run-tests which will have the test executable "./argparser" and all of the CMake dependencies.
+
+
+Functions and What They Do:
 
 Argument Class Functions:
 
