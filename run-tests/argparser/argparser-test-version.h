@@ -183,7 +183,7 @@ inline bool argument::is_empty()
 {
     if (action == STORE)
     {
-        if (get_store() == NO_INPUT)
+        if (data[0] == NO_INPUT)
             return true;
         return false;
     }

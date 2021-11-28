@@ -28,6 +28,8 @@ add_executable(
   countNormTest.cpp 
   storeTFNormTest.cpp 
   storeTFDeathTest.cpp 
+  mixedNormTest1.cpp
+  mixedDeathTest1.cpp 
 )
 
 

@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include "argparser/argparser-test-version.h"
 
-class store_NormTest : public ::testing::Test 
+class storeNormTest : public ::testing::Test 
 {
 protected:
     void SetUp() override 
@@ -26,7 +26,7 @@ protected:
 just check to make sure that the set up was done
 in the SetUp() function actually worked properly.
 */
-TEST_F(store_NormTest, proper_setup_works)
+TEST_F(storeNormTest, proper_setup_works)
 {
     ASSERT_EQ(1, p.known_arguments.size()) << "STORE argument could not be added to parser" << std::endl;
 
@@ -48,7 +48,7 @@ checks that when no input is passed in or when
 it should be empty and get_store should return
 NO_INPUT
 */
-TEST_F(store_NormTest, no_input1)
+TEST_F(storeNormTest, no_input1)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -67,7 +67,7 @@ TEST_F(store_NormTest, no_input1)
 /*
 input passed in properly after = this time
 */
-TEST_F(store_NormTest, input1)
+TEST_F(storeNormTest, input1)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -81,7 +81,7 @@ TEST_F(store_NormTest, input1)
     EXPECT_EQ("first", a.get_store());
 }
 
-TEST_F(store_NormTest, input2)
+TEST_F(storeNormTest, input2)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -95,7 +95,7 @@ TEST_F(store_NormTest, input2)
     EXPECT_EQ("first", a.get_store());
 }
 
-TEST_F(store_NormTest, input3)
+TEST_F(storeNormTest, input3)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -111,7 +111,7 @@ TEST_F(store_NormTest, input3)
 /*
 make sure that passing in flag again overwrites previous value
 */
-TEST_F(store_NormTest, input4)
+TEST_F(storeNormTest, input4)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -125,7 +125,7 @@ TEST_F(store_NormTest, input4)
     EXPECT_EQ("second", a.get_store());
 }
 
-TEST_F(store_NormTest, input5)
+TEST_F(storeNormTest, input5)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
@@ -139,7 +139,7 @@ TEST_F(store_NormTest, input5)
     EXPECT_EQ("second", a.get_store());
 }
 
-TEST_F(store_NormTest, input6)
+TEST_F(storeNormTest, input6)
 {
     ASSERT_FALSE(a.is_required);
     ASSERT_EQ(STORE, a.action);
