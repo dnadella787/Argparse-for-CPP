@@ -7,6 +7,8 @@
 #include <string.h>
 #include <set>
 #include <map>
+#include <sstream>
+
 
 //action macros
 #define STORE 1
@@ -48,6 +50,15 @@ private:
     bool is_required = false;                  //if the flag is required or not, false by default
 
     bool printed_already = false;
+
+    template<typename T>                       //helper functions to produce appropriate get output
+    T get_helper(T*);                          //returns single values
+    template<typename T>                       //second one returns a vector of values
+    std::vector<T> get_helper(std::vector<T> *);
+
+    template<typename T>
+    T convert(const std::string& s);           //helper function used by get_helper to convert data
+
 public:
     //constructors
     argument(){}                               //default constructor
@@ -62,11 +73,18 @@ public:
     void set_requirement(const bool& REQUIREMENT);          //set the requirement, causes error if a required flag is not passed in
 
     //public member functions to get the desired value based on type
-    std::string get_store();                                //for use on action STORE
-    bool get_store_tf();                                    //for use on action STORE_FALSE or STORE_TRUE
-    std::vector<std::string> get_append();                  //for use on action APPEND
-    int get_count();                                        //for use on action COUNT
+    // std::string get_store();                                //for use on action STORE
+    // bool get_store_tf();                                    //for use on action STORE_FALSE or STORE_TRUE
+    // std::vector<std::string> get_append();                  //for use on action APPEND
+    // int get_count();                                        //for use on action COUNT
+    
+    template<typename T>                                    //gets output in desired format, uses 
+    T get();
+
     bool is_empty();                                        //use to check if an argument of action STORE_APPEND has data inputted in or not
+
+
+
 
     friend class parser;                                    //parser can access accepted flags and store protocol to define appropriate behavior
 };
@@ -128,75 +146,107 @@ inline void argument::set_requirement(const bool& REQUIREMENT)
     is_required = REQUIREMENT;
 }
 
-
-inline std::string argument::get_store()
+template <typename T>
+T argument::get()
 {
-    if (action != STORE)
-    {
-        std::cerr << "ERROR: " << arg_name << " does not have action STORE, cannot use get_store()" << std::endl;
-        exit(EXIT_FAILURE);
-    }
+    return get_helper((T*)0); 
+}
+
+//return a single value
+template <typename T>
+T argument::get_helper(T*)
+{
+    return convert<T>(data[0]);
+}
+
+//return vector of values 
+template <typename T>
+std::vector<T> argument::get_helper(std::vector<T> *)
+{
+    std::vector<T> ret_vector(data.size());
+    for (size_t i = 0; i < data.size(); ++i)
+        ret_vector[i] = convert<T>(data[i]);
+
+    return ret_vector;
+}
+
+template<typename T>
+T argument::convert(const std::string& s)
+{
+    std::istringstream ss(s);
+    T converted_val;
+    ss >> converted_val;
+    return converted_val;
+}
+
+// inline std::string argument::get_store()
+// {
+//     if (action != STORE)
+//     {
+//         std::cerr << "ERROR: " << arg_name << " does not have action STORE, cannot use get_store()" << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
     
-    return data[0];
-}
+//     return data[0];
+// }
 
 
-inline std::vector<std::string> argument::get_append()
-{
-    if (action != APPEND)
-    {
-        std::cerr << "ERROR: " << arg_name << " does not have action APPEND, cannot use get_append()" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    return data;
-}
+// inline std::vector<std::string> argument::get_append()
+// {
+//     if (action != APPEND)
+//     {
+//         std::cerr << "ERROR: " << arg_name << " does not have action APPEND, cannot use get_append()" << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
+//     return data;
+// }
 
 
-inline int argument::get_count()
-{
-    if (action != COUNT)
-    {
-        std::cerr << "ERROR: " << arg_name << " does not have COUNT action, cannot use get_count()" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-    return count;
-}
+// inline int argument::get_count()
+// {
+//     if (action != COUNT)
+//     {
+//         std::cerr << "ERROR: " << arg_name << " does not have COUNT action, cannot use get_count()" << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
+//     return count;
+// }
 
 
-inline bool argument::get_store_tf()
-{
-    if (action == STORE_FALSE)
-        return (data[0] == STORE_F_DEFAULT);
-    else if (action == STORE_TRUE)
-        return (data[0] != STORE_T_DEFAULT);
-    else
-    {
-        std::cerr << "ERROR: " << arg_name << " does not have action STORE_FALSE or STORE_TRUE, cannot use get_store_tf()" << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}
+// inline bool argument::get_store_tf()
+// {
+//     if (action == STORE_FALSE)
+//         return (data[0] == STORE_F_DEFAULT);
+//     else if (action == STORE_TRUE)
+//         return (data[0] != STORE_T_DEFAULT);
+//     else
+//     {
+//         std::cerr << "ERROR: " << arg_name << " does not have action STORE_FALSE or STORE_TRUE, cannot use get_store_tf()" << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
+// }
 
 
-inline bool argument::is_empty()
-{
-    if (action == STORE)
-    {
-        if (data[0] == NO_INPUT)
-            return true;
-        return false;
-    }
-    else if (action == APPEND)
-    {
-        if (get_append().size() == 0)
-            return true;
-        return false;
-    }
-    else 
-    {
-        std::cerr << "ERROR: is_empty() can only be used with actions STORE and APPEND, cannot use with " << arg_name << std::endl;
-        exit(EXIT_FAILURE);
-    }
-}
+// inline bool argument::is_empty()
+// {
+//     if (action == STORE)
+//     {
+//         if (data[0] == NO_INPUT)
+//             return true;
+//         return false;
+//     }
+//     else if (action == APPEND)
+//     {
+//         if (get_append().size() == 0)
+//             return true;
+//         return false;
+//     }
+//     else 
+//     {
+//         std::cerr << "ERROR: is_empty() can only be used with actions STORE and APPEND, cannot use with " << arg_name << std::endl;
+//         exit(EXIT_FAILURE);
+//     }
+// }
 
 
 /*
@@ -240,26 +290,10 @@ public:
     
     //public member functions 
     template <typename Arg>
-    void add_arguments(Arg&& arg) 
-    {
-        if (arg.is_required)
-            required_args.insert(&std::forward<Arg>(arg));
-
-        for (const std::string& flag : arg.accepted_flags)
-            known_arguments[flag] = &std::forward<Arg>(arg);
-    }
+    void add_arguments(Arg&& arg);                              //variadic template, base case
 
     template <typename Arg, typename ...Args>
-    void add_arguments(Arg&& arg, Args&& ...args) 
-    {
-        if (arg.is_required)
-            required_args.insert(&std::forward<Arg>(arg));
-            
-        for (const std::string& flag : arg.accepted_flags)
-            known_arguments[flag] = &std::forward<Arg>(arg);
-        
-        add_arguments(std::forward<Args>(args)...);
-    }
+    void add_arguments(Arg&& arg, Args&& ...args);              //variadic template to add any number of arguments
 
     //help message related functions
     void set_prog_name(const std::string& PROG_NAME);           //set the program name
@@ -274,6 +308,27 @@ public:
 ******* PARSER FUNCTION DEFINITONS *******
 */
 
+template <typename Arg>
+void parser::add_arguments(Arg&& arg)
+{
+    if (arg.is_required)
+        required_args.insert(&std::forward<Arg>(arg));
+
+    for (const std::string& flag : arg.accepted_flags)
+        known_arguments[flag] = &std::forward<Arg>(arg);
+}
+
+template <typename Arg, typename ...Args>
+void parser::add_arguments(Arg&& arg, Args&& ...args) 
+{
+    if (arg.is_required)
+        required_args.insert(&std::forward<Arg>(arg));
+        
+    for (const std::string& flag : arg.accepted_flags)
+        known_arguments[flag] = &std::forward<Arg>(arg);
+    
+    add_arguments(std::forward<Args>(args)...);
+}
 
 inline void parser::set_prog_name(const std::string& PROG_NAME)
 {

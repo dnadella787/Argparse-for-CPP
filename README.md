@@ -1,9 +1,8 @@
 THINGS TO DO:
-- implement a generalized get<T>() (and maybe also get_vector<T>()) function
-- implement several template classes for STORE, STORE_APPEND, etc. for compile time error checking
+- implement several template classes for STORE, STORE_APPEND, etc. for compile time error checking when using get() and also adding in multiple versions for the get<> function when specifically COUNT or STORE_TRUE are used (this will be implemented using enable_if(..))
 
 
-Currently under some changes for efficiency sake and more modernizing. I am working on adding more templating for the get() and I refactored much of the internals. I am going to continue to refactor more of the internals.
+Currently under some changes for efficiency sake and more modernizing. I am working on adding more overloads for the get() and I refactored much of the internals already but there is more work to do. The test suite also needs to be updated as a lot of the interface has changed so many of the tests do not work as they should.
 
 
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
