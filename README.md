@@ -1,3 +1,6 @@
+Currently under some changes for efficiency sake and more modernizing. I am working on adding more templating for the get() and I refactored much of the internals. I am going to continue to refactor more of the internals.
+
+
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
 
 This is no longer a work in progress since it works for my purposes, but, I will continue to add more functionality for negative numbers and variability of number of args for a flag. Also going to make it so all errors are outputted before exiting instead of just the first one. 
