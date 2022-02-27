@@ -1,3 +1,8 @@
+THINGS TO DO:
+- implement a generalized get<T>() (and maybe also get_vector<T>()) function
+- implement several template classes for STORE, STORE_APPEND, etc. for compile time error checking
+
+
 Currently under some changes for efficiency sake and more modernizing. I am working on adding more templating for the get() and I refactored much of the internals. I am going to continue to refactor more of the internals.
 
 
