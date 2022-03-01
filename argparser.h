@@ -361,6 +361,8 @@ private:
     virtual void equals_support() {}
     virtual void do_action(const int& flag_num, const int& argc, char** argv) {}
     virtual void do_equals_action(const int& flag_num, const int& argc, char** argv, const int& equal_ind) {}
+    virtual void need_requirement() {}
+
 };
 
 template<typename action>
@@ -393,10 +395,10 @@ private:
         action_type->parse_equal(flag_num, argc, argv, equal_ind);
     }
 
-    template<typename T>                       //helper functions to produce appropriate get output
-    T get_helper(T*);                          //returns single values
-    template<typename T>                       //second one returns a vector of values
-    std::vector<T> get_helper(std::vector<T> *);
+    virtual void need_requirement()
+    {
+        action_type->requirement_not_met(accepted_flags[0]);
+    }
 
 
 public:
