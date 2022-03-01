@@ -15,12 +15,24 @@
 
 /*
 *****************************
-******* ACTION OBJECT *******
+******* ACTION OBJECTs ******
 *****************************
 */
 
 namespace ACTION 
 { 
+
+
+
+template<typename T>
+T convert(const std::string& orig)
+{
+    std::istringstream s(orig);
+    T converted_val;
+    s >> converted_val;
+    return converted_val;
+}
+
 
 class COUNT 
 {
@@ -48,6 +60,24 @@ private:
 
     bool supports_equals() {return false;}
 
+    template<typename T>
+    std::vector<T> get_helper(std::vector<T> *)
+    {
+        static_assert(std::is_integral<T>::value ||
+                      std::is_same<std::string,T>::value,
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, char, or bool for COUNT");
+        return {convert<T>(std::to_string(count))};
+    }
+
+    template<typename T>
+    T get_helper(T*)
+    {
+        static_assert(std::is_integral<T>::value ||
+                      std::is_same<std::string,T>::value,
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, char, or bool for COUNT");
+        return convert<T>(std::to_string(count));
+    }
+
     friend class argument;
     friend class parser;
 };
@@ -71,6 +101,15 @@ private:
     }
 
     bool supports_equals() {return false;}
+
+    template<typename T>
+    T get_helper(T*)
+    {
+        static_assert(std::is_arithmetic<T>::value ||
+                      std::is_same<T, bool>::value,
+                      "ERROR: [get<T>()] T must be numeric or bool for STORE_TRUE");
+        return static_cast<T>(found);
+    }
 
     friend class argument;
     friend class parser;
@@ -96,6 +135,15 @@ private:
 
     bool supports_equals() {return false;}
 
+    template<typename T>
+    T get_helper(T*)
+    {
+        static_assert(std::is_arithmetic<T>::value ||
+                      std::is_same<T, bool>::value,
+                      "ERROR: [get<T>()] T must be numeric or bool for STORE_FALSE");
+        return static_cast<T>(found);
+    }
+
     friend class argument;
     friend class parser;
 };
@@ -106,16 +154,6 @@ class STORE
 private:
     bool supports_equals = true;
     std::string data = "";
-
-    // void parse_input(const int& flag_num, const int& argc, char** argv)
-    // {
-    //     std::string flag(argv[flag_num]);
-    //     size_t ind = flag.find("=");
-    //     if (ind != std::string::npos)
-    //         std::string 
-            
-    // }
-
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {
@@ -179,6 +217,30 @@ private:
     }
 
     bool supports_equals() {return true;}
+
+    template<typename T>
+    std::vector<T> get_helper(std::vector<T> *)
+    {
+        static_assert(std::is_integral<T>::value ||
+                      std::is_same<std::string,T>::value,
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, bool, or char for STORE");
+        return {convert<T>(data)};
+    }
+
+    template<typename T>
+    T get_helper(T*)
+    {
+        static_assert(std::is_integral<T>::value ||
+                      std::is_same<std::string,T>::value,
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, bool, or char for STORE");
+
+        return convert<T>(data);
+    }
+
+    bool get_helper(bool*)
+    {
+        return (data.size() > 0);
+    }
 
     friend class argument;
     friend class parser;
@@ -252,17 +314,40 @@ private:
 
     bool supports_equals() {return false;}
 
+    template<typename T>
+    std::vector<T> get_helper(std::vector<T> *)
+    {
+        static_assert(std::is_integral<T>::value ||
+                      std::is_same<std::string,T>::value,
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, bool, or char for STORE_APPEND");
+        std::vector<T> ret_vector(data.size());
+        for (int i = 0; i < data.size(); ++i)
+            ret_vector[i] = convert<T>(data[i]);
+
+        return ret_vector;
+    }
+
+    template<typename T>
+    T get_helper(T*)
+    {
+        static_assert(std::false_type::value, "ERROR: [get<T>()] T must be a vector for STORE_APPEND");
+    }
+
     friend class argument;
     friend class parser; 
 };
 
-
+}
 
 /*
 *****************************
 ****** ARGUMENT OBJECT ******
 *****************************
 */
+
+namespace argparser 
+{
+
 class arg_base 
 {
 private:
@@ -276,7 +361,6 @@ private:
     virtual void equals_support() {}
     virtual void do_action(const int& flag_num, const int& argc, char** argv) {}
     virtual void do_equals_action(const int& flag_num, const int& argc, char** argv, const int& equal_ind) {}
-    
 };
 
 template<typename action>
@@ -309,20 +393,16 @@ private:
         action_type->parse_equal(flag_num, argc, argv, equal_ind);
     }
 
-
-
     template<typename T>                       //helper functions to produce appropriate get output
     T get_helper(T*);                          //returns single values
     template<typename T>                       //second one returns a vector of values
     std::vector<T> get_helper(std::vector<T> *);
 
-    template<typename T>
-    T convert(const std::string& s);           //helper function used by get_helper to convert data
 
 public:
     //constructors
-    argument(){}                               //default constructor
     argument(const std::string& ARG_NAME);     //constructor that also takes in the argument, use this one
+    ~argument();                               //destructor deallocates the action_type
 
     //public member functions to set up appropriate behavior
     template<typename ... T>
@@ -331,10 +411,13 @@ public:
     void set_help_message(const std::string& HELP_MESSAGE); //set help message for the parser to use
     void set_requirement(const bool& REQUIREMENT);          //set the requirement, causes error if a required flag is not passed in
 
-    template<typename T>                                    //gets output in desired format, uses 
-    T get();
-
     bool is_empty();                                        //use to check if an argument of action STORE_APPEND has data inputted in or not
+
+    template<typename T>
+    T get()
+    {
+        return action_type->get_helper((T*)0);
+    }
 
 
     friend class parser;                                    //parser can access accepted flags and store protocol to define appropriate behavior
@@ -352,7 +435,16 @@ void argument<T>::set_flags(const S&... NAMES)
 }
 
 template<typename T>
-argument<T>::argument(const std::string& ARG_NAME) : arg_base(ARG_NAME) {}
+argument<T>::argument(const std::string& ARG_NAME) : arg_base(ARG_NAME) 
+{
+    action_type = new T;
+}
+
+template<typename T>
+argument<T>::~argument()
+{
+    delete action_type;
+}
 
 template<typename T>
 inline void argument<T>::set_nargs(const int& N_ARGS)
@@ -411,7 +503,7 @@ std::vector<T> argument::get_helper(std::vector<T> *)
 }
 
 template<typename T>
-T argument::convert(const std::string& s)
+T convert(const std::string& s)
 {
     std::istringstream ss(s);
     T converted_val;
@@ -431,13 +523,13 @@ class parser
 {
 private:
     //member variables
-    std::map<std::string, base*> known_arguments;           //holds pointers to all arguments
-    std::string prog_name = "PROG";                             //program name, for help message
-    std::string description = NO_DESCRIPTION;                   //description, for help message
-    std::set<base*> required_args;                          //all the arguments that are required
+    std::map<std::string, arg_base*> known_arguments;           //holds pointers to all arguments
+    std::string prog_name = "PROG";                         //program name, for help message
+    std::string description = NO_DESCRIPTION;               //description, for help message
+    std::set<arg_base*> required_args;                          //all the arguments that are required
     
     //private helper functions used internally
-    void print_help();                                          //prints help message for -h, --help
+    void print_help();                                      //prints help message for -h, --help
 
 
 
@@ -629,5 +721,7 @@ inline void parser::parse_args(const int& argc, char** argv)
 
 //     std::cout << "  " << "-h, --help   ==>   generates this help/usage message" << std::endl;
 // }
+
+}
 
 #endif 
