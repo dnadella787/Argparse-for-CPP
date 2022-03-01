@@ -55,7 +55,7 @@ private:
 
     void requirement_not_met(const std::string accepted_flag)
     {
-        std::cerr << "ERROR: " << a->accepted_flags[0] << " is a required COUNT action argument" << std::endl;
+        std::cerr << "ERROR: " << accepted_flag << " is a required COUNT action argument" << std::endl;
     }
 
     bool supports_equals() {return false;}
