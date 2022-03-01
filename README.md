@@ -1,6 +1,5 @@
 THINGS TO DO:
-- implement several template classes for STORE, STORE_APPEND, etc. for compile time error checking when using get() and also adding in multiple versions for the get<> function when specifically COUNT or STORE_TRUE are used (this will be implemented using enable_if(..))
-
+- implement get functionality into the argument class again. Also look into the print_help() function can be updated for the new library.
 
 Currently under some changes for efficiency sake and more modernizing. I am working on adding more overloads for the get() and I refactored much of the internals already but there is more work to do. The test suite also needs to be updated as a lot of the interface has changed so many of the tests do not work as they should.
 
