@@ -1,5 +1,7 @@
 NOTE:
-- code has been completely refactored but I am still working on updating and adding more unit tests as well as actually passing those unit tests. The documentation also needs to be completely redone. 
+- code has been updated for the most part. Working on fixing all the bugs, rewriting unit tests for the new interface, adding more unit tests, and passing all the unit tests
+- documentation also needs to be updated
+
 
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
 

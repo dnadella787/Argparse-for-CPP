@@ -1,10 +1,3 @@
-/*
-things to do:
-- need to add a bunch of std::enable_if(..)'s everywhere and then deal with access issues.
-- apparently member functions of the actions are private to even the argument class despite friendship
-*/
-
-
 #ifndef ARGPARSER_H
 #define ARGPARSER_H 
 
@@ -36,7 +29,6 @@ namespace ACTION
 { 
 
 
-
 template<typename T>
 T convert(const std::string& orig)
 {
@@ -52,10 +44,9 @@ bool convert<bool>(const std::string& s)
     return (s.size() > 0);
 }
 
-
 class COUNT 
 {
-private:
+public:
     int count = 0; 
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
@@ -70,11 +61,6 @@ private:
             exit(EXIT_FAILURE);
         }
         return;
-    }
-
-    void requirement_not_met(const std::string accepted_flag)
-    {
-        std::cerr << "ERROR: " << accepted_flag << " is a required COUNT action argument" << std::endl;
     }
 
     bool supports_equals() {return false;}
@@ -96,15 +82,11 @@ private:
                       "ERROR: [get<std::vector<T>>()] T must be numeric, string, char, or bool for COUNT");
         return convert<T>(std::to_string(count));
     }
-
-    friend class argument;
-    friend class parser;
 };
-
 
 class STORE_TRUE 
 {
-private:
+public:
     bool found = false;
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
@@ -128,11 +110,7 @@ private:
                       "ERROR: [get<T>()] T must be numeric or bool for STORE_TRUE");
         return static_cast<T>(found);
     }
-
-    friend class argument;
-    friend class parser;
 };
-
 
 class STORE_FALSE 
 {
@@ -160,15 +138,11 @@ private:
                       "ERROR: [get<T>()] T must be numeric or bool for STORE_FALSE");
         return static_cast<T>(found);
     }
-
-    friend class argument;
-    friend class parser;
 };
-
 
 class STORE 
 {
-private:
+public:
     std::string data = "";
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
@@ -202,29 +176,6 @@ private:
 
     }
 
-    void parse_equal(const int& flag_num, const int& argc, char** argv, const int& equal_iter)
-    {
-
-        if (argv[flag_num][equal_iter + 1] == '\0')
-        {
-            std::cerr << "ERROR: no input after = for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
-            exit(EXIT_FAILURE);
-        }
-        else if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
-        {
-            std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
-            exit(EXIT_FAILURE);
-        }
-        data = &argv[flag_num][equal_iter + 1];
-    }
-
-    void requirement_not_met(const std::string accepted_flag)
-    {
-        std::cerr << "ERROR: " << accepted_flag << " is a required STORE action argument" << std::endl;
-    }
-
     bool check_empty()
     {
         if (data.size())
@@ -252,15 +203,11 @@ private:
 
         return convert<T>(data);
     }
-
-    friend class argument;
-    friend class parser;
 };
-
 
 class STORE_APPEND 
 {
-private:
+public:
     std::vector<std::string> data;
     int n_args = 1;
 
@@ -309,11 +256,6 @@ private:
         }
     }
 
-    void requirement_not_met(const std::string accepted_flag)
-    {
-        std::cerr << "ERROR: " << accepted_flag << " is a required STORE_APPEND action argument" << std::endl;
-    }
-
 
     bool check_empty()
     {
@@ -342,10 +284,35 @@ private:
 
         return ret_vector;
     }
-
-    friend class argument;
-    friend class parser; 
 };
+
+/*
+***** INTERNAL HELPER FUNCTIONS *****
+*/
+
+void requirement_not_met(const std::string accepted_flag)
+{
+    std::cerr << "ERROR: " << accepted_flag << " is a required argument" << std::endl;
+}
+
+void parse_equal(STORE* argument, const int& flag_num, const int& argc, char** argv, const int& equal_iter)
+{
+
+    if (argv[flag_num][equal_iter + 1] == '\0')
+    {
+        std::cerr << "ERROR: no input after = for " << argv[flag_num] << " flag" << std::endl;
+        // print_help();
+        exit(EXIT_FAILURE);
+    }
+    else if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
+    {
+        std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
+        // print_help();
+        exit(EXIT_FAILURE);
+    }
+    argument->data = &argv[flag_num][equal_iter + 1];
+}
+
 
 }
 
@@ -360,7 +327,7 @@ namespace argparser
 
 class arg_base 
 {
-private:
+protected:
     arg_base(const std::string& n) : arg_name(n) {}
 
     std::string arg_name;                      //name of argument
@@ -368,9 +335,8 @@ private:
     std::string help_message;                  //help message for specific argument, used by parser to generate usage 
     bool is_required = false;                  //if the flag is required or not, false by default
 
-    virtual void equals_support() {}
+    virtual bool equals_support() {return true;}
     virtual void do_action(const int& flag_num, const int& argc, char** argv) {}
-    virtual void do_equals_action(const int& flag_num, const int& argc, char** argv, const int& equal_ind) {}
     virtual void need_requirement() {}
 
 };
@@ -409,17 +375,6 @@ private:
     {
         action_type->parse_input(flag_num, argc, argv);
     }
-
-    virtual void do_equals_action(const int& flag_num, const int& argc, char** argv, const int& equal_ind)
-    {
-        action_type->parse_equal(flag_num, argc, argv, equal_ind);
-    }
-
-    virtual void need_requirement()
-    {
-        action_type->requirement_not_met(accepted_flags[0]);
-    }
-
 
 public:
     /*
@@ -461,8 +416,6 @@ public:
                       "ERROR: set_requirement() can only be used on actions 'COUNT', 'STORE', or 'STORE_APPEND'");
         is_required = REQUIREMENT;
     }
-
-
 
     /*
     ******* INFO GATHERING PUBLIC FUNCTIONS FOR POST PARSING *******
@@ -584,7 +537,7 @@ public:
 //                 if (iter != known_arguments.end()) //if this flag is recognized 
 //                 {
 //                     if (iter->second->equals_support()) //if this flag supports '='
-//                         iter->second->do_equals_action(i, argc, argv, ind);
+//                         parse_equal(iter->second->action, flag_num, argc, argv, equal_ind);
 //                     else    //otherwise this flag doesnt support '=' assignment, error
 //                     {
 //                         std::cerr << "ERROR: " << curr_flag.substr(0,ind) << "does not have action STORE, doesnt accept '='" << std::endl;
@@ -624,7 +577,7 @@ public:
 //         while (!required_args.empty())
 //         {
 //             base* b = *required_args.begin();
-//             b->need_requirement();
+//             requirement_not_met(b->accepted_flags[0]);
 //             required_args.erase(a);
 //         }
 //         print_help();
