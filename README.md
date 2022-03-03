@@ -1,5 +1,5 @@
 NOTE:
-- code has been updated for the most part. Working on fixing all the bugs, rewriting unit tests for the new interface, adding more unit tests, and passing all the unit tests
+- Working on rewriting unit tests for the new interface, adding more unit tests, and passing all the unit tests
 - documentation also needs to be updated
 
 

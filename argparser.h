@@ -27,7 +27,12 @@ struct is_std_vector<std::vector<T,A>> : std::true_type {};
 
 namespace ACTION 
 { 
-
+class action_base 
+{
+protected:
+    action_base() {}
+    virtual void do_nothing() {}
+};
 
 template<typename T>
 T convert(const std::string& orig)
@@ -44,10 +49,15 @@ bool convert<bool>(const std::string& s)
     return (s.size() > 0);
 }
 
-class COUNT 
+class COUNT : public action_base
 {
 public:
-    int count = 0; 
+    int count; 
+
+    COUNT() 
+    {
+        count = 0;
+    }
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {
@@ -84,10 +94,15 @@ public:
     }
 };
 
-class STORE_TRUE 
+class STORE_TRUE : public action_base 
 {
 public:
-    bool found = false;
+    bool found;
+
+    STORE_TRUE()
+    {
+        found = false;
+    }
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {
@@ -112,10 +127,15 @@ public:
     }
 };
 
-class STORE_FALSE 
+class STORE_FALSE : public action_base
 {
-private:
-    bool found = true;
+public:
+    bool found;
+
+    STORE_FALSE() 
+    {
+        found = true;
+    }
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {   
@@ -140,10 +160,15 @@ private:
     }
 };
 
-class STORE 
+class STORE : public action_base 
 {
 public:
-    std::string data = "";
+    std::string data;
+
+    STORE()
+    {
+        data = "";
+    }
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {
@@ -178,9 +203,7 @@ public:
 
     bool check_empty()
     {
-        if (data.size())
-            return true;
-        return false;
+        return !(data.size() > 0);
     }
 
     bool supports_equals() {return true;}
@@ -205,11 +228,16 @@ public:
     }
 };
 
-class STORE_APPEND 
+class STORE_APPEND : public action_base 
 {
 public:
     std::vector<std::string> data;
-    int n_args = 1;
+    int n_args;
+
+    STORE_APPEND()
+    {
+        n_args = 1;
+    }
 
     void parse_input(const int& flag_num, const int& argc, char** argv)
     {
@@ -259,9 +287,7 @@ public:
 
     bool check_empty()
     {
-        if (!data.empty())
-            return true;
-        return false;
+        return data.empty();
     }
 
     bool supports_equals() {return false;}
@@ -287,7 +313,7 @@ public:
 };
 
 /*
-***** INTERNAL HELPER FUNCTIONS *****
+***** PUBLIC HELPER FUNCTIONS *****
 */
 
 void requirement_not_met(const std::string accepted_flag)
@@ -338,7 +364,10 @@ protected:
     virtual bool equals_support() {return true;}
     virtual void do_action(const int& flag_num, const int& argc, char** argv) {}
     virtual void need_requirement() {}
+    // virtual std::string get_first_flag() {return "";}
+    virtual ACTION::action_base* get_action_type() {return nullptr;}
 
+    friend class parser;
 };
 
 template<typename action>
@@ -346,7 +375,7 @@ class argument : public arg_base
 {
 private:
     /*
-    ******* CHECK ACTION IS SUPPORT *******
+    ******* CHECK ACTION IS SUPPORTED *******
     */
     static_assert(std::is_same<action, ACTION::COUNT>::value || 
                   std::is_same<action, ACTION::STORE_TRUE>::value ||
@@ -358,10 +387,8 @@ private:
     /*
     ******* BASIC INTERNAL DATA *******
     */
-    std::vector<std::string> accepted_flags;
-    action* action_type;
-    std::string help_message;
-    bool is_required = false;
+    action* action_type;                      //pointer to the action type, houses parser and get functions
+
 
     /*
     ******* INTERNAL VIRTUAL FUNCTIONS FOR PARSING/INFO FROM PARSER OBJ *******
@@ -374,6 +401,16 @@ private:
     virtual void do_action(const int& flag_num, const int& argc, char** argv)
     {
         action_type->parse_input(flag_num, argc, argv);
+    }
+
+    // virtual std::string get_first_flag()
+    // {
+    //     return accepted_flags
+    // }
+
+    virtual action* get_action_type()
+    {
+        return action_type;
     }
 
 public:
@@ -408,8 +445,8 @@ public:
     {
         help_message = HELP_MESSAGE;
     }
-    void set_requirement(const bool& REQUIREMENT)          //set the requirement, causes error if a required flag is not passed in
-    {
+    void set_requirement(const bool& REQUIREMENT)           //set the requirement, causes error if a required flag is not passed in
+    { 
         static_assert(std::is_same<action, ACTION::STORE_APPEND>::value ||
                       std::is_same<action, ACTION::STORE>::value || 
                       std::is_same<action, ACTION::COUNT>::value,
@@ -439,151 +476,136 @@ public:
 
 
 
-// /*
-// ******************************
-// ******* PARSER OBJECT ********
-// ******************************
-// */
+/*
+******************************
+******* PARSER OBJECT ********
+******************************
+*/
 
-// class parser 
-// {
-// private:
-//     //member variables
-//     std::map<std::string, arg_base*> known_arguments;           //holds pointers to all arguments
-//     std::string prog_name = "PROG";                         //program name, for help message
-//     std::string description = NO_DESCRIPTION;               //description, for help message
-//     std::set<arg_base*> required_args;                          //all the arguments that are required
+class parser 
+{
+private:
+    //member variables
+    std::map<std::string, arg_base*> known_arguments;           //holds pointers to all arguments
+    std::string prog_name = "PROG";                             //program name, for help message
+    std::string description = NO_DESCRIPTION;                   //description, for help message
+    std::set<arg_base*> required_args;                          //all the arguments that are required
     
-//     //private helper functions used internally
-//     void print_help();                                      //prints help message for -h, --help
-
-
-
-// public:
-//     //constructors
-//     parser(){} 
+public:
+    //constructors
+    parser(){} 
     
-//     //public member functions 
-//     template <typename Arg>
-//     void add_arguments(Arg&& arg);                              //variadic template, base case
+    //public member functions 
+    template <typename Arg>
+    void add_arguments(Arg&& arg)                               //variadic template, base case
+    {
+        if (arg.is_required)
+            required_args.insert(&std::forward<Arg>(arg));
 
-//     template <typename Arg, typename ...Args>
-//     void add_arguments(Arg&& arg, Args&& ...args);              //variadic template to add any number of arguments
+        for (const std::string& flag : arg.accepted_flags)
+            known_arguments[flag] = &std::forward<Arg>(arg);
+    }
 
-//     //help message related functions
-//     void set_prog_name(const std::string& PROG_NAME);           //set the program name
-//     void set_description(const std::string& DESCRIPTION);       //set the description name
-
-//     //output related function
-//     void parse_args(const int& argc, char** argv);              //parses args and assigns variables, whole point of this
-// };
-
-
-// /*
-// ******* PARSER FUNCTION DEFINITONS *******
-// */
-
-// template <typename Arg>
-// void parser::add_arguments(Arg&& arg)
-// {
-//     if (arg.is_required)
-//         required_args.insert(&std::forward<Arg>(arg));
-
-//     for (const std::string& flag : arg.accepted_flags)
-//         known_arguments[flag] = &std::forward<Arg>(arg);
-// }
-
-// template <typename Arg, typename ...Args>
-// void parser::add_arguments(Arg&& arg, Args&& ...args) 
-// {
-//     if (arg.is_required)
-//         required_args.insert(&std::forward<Arg>(arg));
+    template <typename Arg, typename ...Args>
+    void add_arguments(Arg&& arg, Args&& ...args)               //variadic template to add any number of arguments
+    {
+        if (arg.is_required)
+            required_args.insert(&std::forward<Arg>(arg));
+            
+        for (const std::string& flag : arg.accepted_flags)
+            known_arguments[flag] = &std::forward<Arg>(arg);
         
-//     for (const std::string& flag : arg.accepted_flags)
-//         known_arguments[flag] = &std::forward<Arg>(arg);
-    
-//     add_arguments(std::forward<Args>(args)...);
-// }
+        add_arguments(std::forward<Args>(args)...);
+    }
 
-// inline void parser::set_prog_name(const std::string& PROG_NAME)
-// {
-//     prog_name = PROG_NAME;
-// }
+    //help message related functions
+    void set_prog_name(const std::string& PROG_NAME)            //set the program name
+    {
+        prog_name = PROG_NAME;
+    }
 
-// inline void parser::set_description(const std::string& DESCRIPTION)
-// {
-//     description = DESCRIPTION;
-// }
+    void set_description(const std::string& DESCRIPTION)        //set the description name
+    {
+        description = DESCRIPTION;
+    }
 
-// inline void parser::parse_args(const int& argc, char** argv)
-// {
-//     for (int i = 1; i < argc; i++)
-//     {
-//         if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0)
-//         {
-//             // print_help();
-//             exit(EXIT_SUCCESS);
-//         }
-//     }
-//     for (int i = 1; i < argc; i++)
-//     {
-//         if (argv[i][0] == '-')
-//         {
-//             std::string curr_flag(argv[i]);
-//             size_t ind = curr_flag.find("=")
-//             if (ind != std::string::npos)  //if there is an '=' in the current arg
-//             {
-//                 auto iter = known_arguments.find(curr_flag.substr(0, ind));
-//                 if (iter != known_arguments.end()) //if this flag is recognized 
-//                 {
-//                     if (iter->second->equals_support()) //if this flag supports '='
-//                         parse_equal(iter->second->action, flag_num, argc, argv, equal_ind);
-//                     else    //otherwise this flag doesnt support '=' assignment, error
-//                     {
-//                         std::cerr << "ERROR: " << curr_flag.substr(0,ind) << "does not have action STORE, doesnt accept '='" << std::endl;
-//                         // print_help();
-//                         exit(EXIT_FAILURE);
-//                     }
-//                 }
-//                 else //flag is not recognized
-//                 {
-//                     std::cerr << "ERROR: " << curr_flag.substr(0,ind) << " is not a recognized flag." << std::endl;
-//                     // print_help();
-//                     exit(EXIT_FAILURE);
-//                 }
-//             }
-//             else //no equals parse normally
-//             {
-//                 auto iter = known_arguments.find(argv[i]);
-//                 if (iter != known_arguments.end()) //if flag is recognized
-//                 {
-//                     iter->second->do_action(i, argc, argv);
-//                     if (iter->second->is_required)
-//                         required_args.erase(iter->second);
-//                 }
-//                 else //otherwise its an error 
-//                 {
-//                     std::cerr << "ERROR: " << argv[i] << " is not a recognized argument" << std::endl;
-//                     // print_help();
-//                     exit(EXIT_FAILURE);
-//                 }
-//             }
-//         }
-//     }
-    
-//     //there should be no required arguments remaining
-//     if (!required_args.empty())
-//     {
-//         while (!required_args.empty())
-//         {
-//             base* b = *required_args.begin();
-//             requirement_not_met(b->accepted_flags[0]);
-//             required_args.erase(a);
-//         }
-//         print_help();
-//         exit(EXIT_FAILURE);
-//     }
-// }
+    //output related function
+    void parse_args(const int& argc, char** argv)               //parses args and assigns variables, whole point of this
+    {
+        for (int i = 1; i < argc; i++)
+        {
+            std::string curr(argv[i]);
+            if (curr == "-h" || curr == "--help")
+            {
+                // print_help();
+                exit(EXIT_SUCCESS);
+            }
+        }
+        for (int i = 1; i < argc; i++)
+        {
+            if (argv[i][0] == '-')
+            {
+                std::string curr_flag(argv[i]);
+                size_t ind = curr_flag.find("=");
+                if (ind != std::string::npos)  //if there is an '=' in the current arg
+                {
+                    auto iter = known_arguments.find(curr_flag.substr(0, ind));
+                    if (iter != known_arguments.end()) //if this flag is recognized 
+                    {
+                        if (iter->second->equals_support()) //if this flag supports '='
+                            ACTION::parse_equal(dynamic_cast<ACTION::STORE*>(iter->second->get_action_type()), 
+                                                i,
+                                                argc, 
+                                                argv, 
+                                                ind);
+                        else    //otherwise this flag doesnt support '=' assignment, error
+                        {
+                            std::cerr << "ERROR: " << curr_flag.substr(0,ind) << " does not have action STORE, doesn't accept '='" << std::endl;
+                            // print_help();
+                            exit(EXIT_FAILURE);
+                        }
+                    }
+                    else //flag is not recognized
+                    {
+                        std::cerr << "ERROR: " << curr_flag.substr(0,ind) << " is not a recognized flag." << std::endl;
+                        // print_help();
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                else //no equals parse normally
+                {
+                    auto iter = known_arguments.find(argv[i]);
+                    if (iter != known_arguments.end()) //if flag is recognized
+                    {
+                        iter->second->do_action(i, argc, argv);
+                        if (iter->second->is_required)
+                            required_args.erase(iter->second);
+                    }
+                    else //otherwise its an error 
+                    {
+                        std::cerr << "ERROR: " << argv[i] << " is not a recognized argument" << std::endl;
+                        // print_help();
+                        exit(EXIT_FAILURE);
+                    }
+                }
+            }
+        }
+        
+        //there should be no required arguments remaining
+        if (!required_args.empty())
+        {
+            while (!required_args.empty())
+            {
+                arg_base* b = *required_args.begin();
+                ACTION::requirement_not_met(b->accepted_flags[0]);
+                required_args.erase(b);
+            }
+            // print_help();
+            exit(EXIT_FAILURE);
+        }
+    }
+};
+
 
 
 // // inline void parser::print_help()
