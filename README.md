@@ -63,7 +63,7 @@ Parser Object Functions:
 
 Default constructor for parser, there is no constructor that take parameters for this object.
 
-    void parser::add_arguments(argument*...)
+    void parser::add_arguments(argument...)
 
 Allows you to add all arguments to the parser object with as many arguments as possible. NOTE: they must be pointers to arguments, not the actual argument.
 
