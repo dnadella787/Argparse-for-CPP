@@ -1,10 +1,4 @@
-NOTE:
-- Working on rewriting unit tests for the new interface, adding more unit tests, and passing all the unit tests
-- documentation also needs to be updated
-
-An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
-
-This is no longer a work in progress since it works for my purposes, but, I will continue to add more functionality for negative numbers and variability of number of args for a flag. Also going to make it so all errors are outputted before exiting instead of just the first one. 
+An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing.
 
 
 There is an argument class that is similar to the python add_argument method except that each argument must be initialized as an argument object first and then added to the parser object. 
@@ -13,16 +7,13 @@ To install, simply run:
 
     sudo make install 
 
-To run tests:
+Namespaces: 
 
-    make tests
-
-important to note that this will produce a "build" directry in run-tests which will have the test executable "./argparser" and all of the CMake dependencies.
-
+Both the argument and the parser functions are in the argparser namespace but all of the actions (COUNT, STORE, etc.) are in the ACTION namespace. Example below will exemplify this.
 
 Argument Class Functions:
 
-    argument::argument(std::string)
+    argparser::argument<ACTION>(std::string)
 
 initialize the argument object with a name as the parameter. The name is useful for the help message and error outputs but is not necessary.
 
@@ -32,37 +23,22 @@ Add all allowable command line flags to the argument class. You can add in as ma
 
     void argument::set_nargs(int)
 
-Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it.
+Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it. Compiler will only allow you to set nargs for the action STORE_APPEND
 
     void argument::set_requirement(bool)
 
-Specified whether the argument must be specified on command line. The requirement is false by default but you can change it by setting it to set_requirement(true). 
+Specified whether the argument must be specified on command line. The requirement is false by default but you can change it by setting it to set_requirement(true). Compiler
 
-    std::string argument::get_store()
+    std::string argument::get<T>()
 
-Returns a string of the value specified for the flag. Can only be used for action STORE, else error will be raised. If there is no input, then the macro NO_INPUT is returned but it is best to check if this has ocurred using the function is_empty() 
-
-    bool argument::get_store_tf()
-
-Returns the value that is stored based on the actions STORE_TRUE or STORE_FALSE. If it is STORE_TRUE and the flag is specified, then it returns true, else false. The case for STORE_FALSE is similar. Can only be used with the action STORE_TRUE or STORE_FALSE, otherwise an error will happen.
-    
-    std::vector<std::string> argument::get_append()
-
-Returns a vector of strings with all processed inputs. If no inputs are specified it will return an empty vector but it is best to check this using is_empty(). If the action of the argument is not APPEND then it will raise an error.
-
-    int argument::get_count()
-
-Returns the number of times an argument has been specified. Can only be used with action COUNT.
+Gives you the relavent output based on the initial action type specified. So if its ACTION::COUNT then get<int>() will return an integer of the count value. If it was ACTION::STORE get<std::string>() will return a string of the input for that flag. Note that for ACTION::STORE_APPEND the get function call must be of the form get<std::vector<T>>(). Not all types are allowed but for the ones that are not allowed the compiler will throw you warnings. 
 
     bool argument::is_empty()
 
 Used with the action STORE and APPEND. If no input is specified in either case the function returns true, else false.
 
-    void argument::set_action(MACRO)
 
-This defines how the argument will be parsed by the parser object. There are 5 different possible actions included below.
-
-Possible set_action MACROS:
+Possible ACTIONs:
 
     STORE
 
@@ -72,7 +48,7 @@ n_args is set to 1 and exactly one variable after any of the allowable flags is 
 
 If the flag is passed in, then the argument is stored as true and false for STORE_TRUE and STORE_FALSE respectively. n_args is set to 1 and any input after the flag will raise error.
 
-    APPEND
+    STORE_APPEND
 
 n_args number of inputs will be taken in after the acceptable flag and stored. If you try to use the flag more than once it will raise an error, will not overwrite. If less than n_arg inputs or more are passed in, an error will be raised.
 
@@ -101,7 +77,7 @@ Allows user to set the description of the program, used in the help message.
 
     void parser::parse_args(int argc, char** argv)
 
-This doeos the actual parsing. NOTE: you must call this function before using any of the get_[ACTION]() functions to get actual output. argc and argv are the same that are used for the main function when accessing command line arguments.
+This doeos the actual parsing. NOTE: you must call this function before using any of the get<T>() functions to get actual output. argc and argv are the same that are used for the main function when accessing command line arguments.
 
     
 Example Code:
@@ -113,32 +89,26 @@ Example Code:
 
     int main(int argc, char **argv) 
     {
-        argument a("FIRST ARGUMENET");
+        argparser::argument<ACTION::STORE> a("FIRST ARGUMENET");
         a.set_flags("-a", "--apple");
         a.set_help_message("generate full output");
-        a.set_action(STORE);
 
-        argument b("SECOND ARGUMENT");
+        argparser::argument<ACTION::STORE_TRUE> b("SECOND ARGUMENT");
         b.set_flags("-b", "--book");
-        b.set_action(STORE_TRUE);
 
-        argument c("THIRD ARGUMENT");
+        argparser::argument<ACTION::STORE_FALSE> c("THIRD ARGUMENT");
         c.set_flags("-c", "--cutlet");
-        c.set_action(STORE_FALSE);
 
-        argument d("FOURTH ARGUMENT");
+        argparser::argument<ACTION::COUNT> d("FOURTH ARGUMENT");
         d.set_flags("-d", "--dracula");
-        d.set_action(COUNT);
         d.set_requirement(true);
 
-        argument e("FIFTH ARGUMENT");
+        argparser::argument<ACTION::STORE_APPEND> e("FIFTH ARGUMENT");
         e.set_flags("-e", "--epsilon");
-        e.set_action(APPEND);
         e.set_nargs(3);
 
-
         parser p;
-        p.add_arguments(&a,&b,&c,&d, &e);
+        p.add_arguments(a,b,c,d,e);
         p.set_description("this program does many many important things");
         p.parse_args(argc, argv);
 
@@ -147,12 +117,12 @@ Example Code:
         else
             std::cout << "first argument is empty" << std::endl;    
 
-        if (b.get_store_tf())
+        if (b.get<bool>())
             std::cout << "second argument was specified" << std::endl; 
         else
             std::cout << "second argument was not specified" << std::endl;
         
-        if (d.get_count() > 0)
+        if (d.get<double>() > 0)
             std::cout << "fourth argument was specified at least once" << std::endl;
         else
         {
@@ -160,14 +130,18 @@ Example Code:
             std::cout << but this is not possible since it is required << std::endl;
         }
 
+        // d.get<char>() and d.get<std::string>() are also supported for COUNT
+
         if (!e.is_empty())
         {
             std::cout << "fifth argument has values: " << std::endl;
-            for (std::string s : e.get_append())
+            for (std::string s : e.get<std::vector<std::string>>())
             {
                 std::cout << s << std::endl;
             }
         }
+
+        //e.get<std::string>() <-- this will throw a compiler warning since e is STORE_APPEND but no vector is specified
 
 
 

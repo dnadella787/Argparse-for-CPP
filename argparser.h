@@ -27,8 +27,8 @@ std::string options = "options : \n";
 std::string prog_name = "PROG";
 void print_help()
 {
-    std::cout << "usage : " << prog_name << " " << usage_message + '\n' + description + '\n' + options;
-    std::cout << "-h, --help   ==>   generates this help/usage message" << std::endl;
+    std::cerr << "usage : " << prog_name << " " << usage_message + '\n' + description + '\n' + options;
+    std::cerr << "-h, --help   ==>   generates this help/usage message" << std::endl;
 }
 }
 
@@ -379,7 +379,6 @@ protected:
     virtual bool equals_support() {return true;}
     virtual void do_action(const int& flag_num, const int& argc, char** argv) {}
     virtual void need_requirement() {}
-    // virtual std::string get_first_flag() {return "";}
     virtual ACTION::action_base* get_action_type() {return nullptr;}
 
     friend class parser;
@@ -417,11 +416,6 @@ private:
     {
         action_type->parse_input(flag_num, argc, argv);
     }
-
-    // virtual std::string get_first_flag()
-    // {
-    //     return accepted_flags
-    // }
 
     virtual action* get_action_type()
     {
@@ -503,7 +497,6 @@ private:
     //member variables
     std::map<std::string, arg_base*> known_arguments;           //holds pointers to all arguments
     std::string prog_name = "PROG";                             //program name, for help message
-    bool no_description = true;                                 //tell if the description has been set or not
     std::set<arg_base*> required_args;                          //all the arguments that are required
     
 public:
