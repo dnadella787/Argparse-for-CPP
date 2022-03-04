@@ -16,8 +16,21 @@ struct is_std_vector : std::false_type {};
 template<typename T, typename A>
 struct is_std_vector<std::vector<T,A>> : std::true_type {};
 
-//macro for help message
-#define NO_DESCRIPTION "no_description"
+/*
+****** SETUP HELP MESSAGE ******
+*/
+namespace help 
+{
+std::string usage_message;
+std::string description;
+std::string options = "options : \n";
+std::string prog_name = "PROG";
+void print_help()
+{
+    std::cout << "usage : " << prog_name << " " << usage_message + '\n' + description + '\n' + options;
+    std::cout << "-h, --help   ==>   generates this help/usage message" << std::endl;
+}
+}
 
 /*
 *****************************
@@ -27,12 +40,7 @@ struct is_std_vector<std::vector<T,A>> : std::true_type {};
 
 namespace ACTION 
 { 
-class action_base 
-{
-protected:
-    action_base() {}
-    virtual void do_nothing() {}
-};
+
 
 template<typename T>
 T convert(const std::string& orig)
@@ -48,6 +56,13 @@ bool convert<bool>(const std::string& s)
 {
     return (s.size() > 0);
 }
+
+class action_base 
+{
+protected:
+    action_base() {}
+    virtual void do_nothing() {}
+};
 
 class COUNT : public action_base
 {
@@ -67,7 +82,7 @@ public:
         else if (argv[flag_num + 1][0] != '-')
         {
             std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         return;
@@ -109,7 +124,7 @@ public:
         if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
         {
             std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag, action STORE_TRUE" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         found = true;
@@ -142,7 +157,7 @@ public:
         if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
         {
             std::cerr << "ERROR: no input expected for " << argv[flag_num] << " flag, action STORE_FALSE" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         found = false;
@@ -175,13 +190,13 @@ public:
         if (flag_num + 1 == argc)
         {
             std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         else if (argv[flag_num + 1][0] == '-')
         {
             std::cerr << "ERROR: input expected for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         else
@@ -195,7 +210,7 @@ public:
         else if (argv[flag_num + 2][0] != '-')
         {
             std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
 
@@ -245,7 +260,7 @@ public:
         if (data.size() == n_args)
         {
             std::cerr << "ERROR: " << argv[flag_num] << " already has input, cannot input twice" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
 
@@ -253,7 +268,7 @@ public:
         if (n_args + flag_num >= argc)
         {
             std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
         // otherwise iterate over the next n_args in char* argv[]
@@ -262,7 +277,7 @@ public:
             if (argv[flag_num + i][0] == '-')
             {
                 std::cerr << "ERROR: not enough inputs for " << argv[flag_num] << " flag" << std::endl;
-                // print_help();
+                help::print_help();
                 exit(EXIT_FAILURE);
             }
             else
@@ -279,7 +294,7 @@ public:
         else if (argv[flag_num + n_args + 1][0] != '-')
         {
             std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
     }
@@ -327,13 +342,13 @@ void parse_equal(STORE* argument, const int& flag_num, const int& argc, char** a
     if (argv[flag_num][equal_iter + 1] == '\0')
     {
         std::cerr << "ERROR: no input after = for " << argv[flag_num] << " flag" << std::endl;
-        // print_help();
+        help::print_help();
         exit(EXIT_FAILURE);
     }
     else if (flag_num + 1 < argc && argv[flag_num + 1][0] != '-')
     {
         std::cerr << "ERROR: too many inputs for " << argv[flag_num] << " flag" << std::endl;
-        // print_help();
+        help::print_help();
         exit(EXIT_FAILURE);
     }
     argument->data = &argv[flag_num][equal_iter + 1];
@@ -488,7 +503,7 @@ private:
     //member variables
     std::map<std::string, arg_base*> known_arguments;           //holds pointers to all arguments
     std::string prog_name = "PROG";                             //program name, for help message
-    std::string description = NO_DESCRIPTION;                   //description, for help message
+    bool no_description = true;                                 //tell if the description has been set or not
     std::set<arg_base*> required_args;                          //all the arguments that are required
     
 public:
@@ -501,9 +516,19 @@ public:
     {
         if (arg.is_required)
             required_args.insert(&std::forward<Arg>(arg));
-
+        
+        help::usage_message += "[ ";
+        std::string temp_options = "";
         for (const std::string& flag : arg.accepted_flags)
+        {
+            help::usage_message += flag + " | ";
+            temp_options += ", " + flag;
+
             known_arguments[flag] = &std::forward<Arg>(arg);
+        }
+
+        help::options += temp_options.substr(2, temp_options.size()) + "  ==>  " + arg.help_message + '\n';
+        help::usage_message[help::usage_message.size()-2] = ']';
     }
 
     template <typename Arg, typename ...Args>
@@ -512,8 +537,18 @@ public:
         if (arg.is_required)
             required_args.insert(&std::forward<Arg>(arg));
             
+        help::usage_message += "[ ";
+        std::string temp_options = "";
         for (const std::string& flag : arg.accepted_flags)
+        {
+            help::usage_message += flag + " | ";
+            temp_options += ", " + flag;
+
             known_arguments[flag] = &std::forward<Arg>(arg);
+        }
+
+        help::options += temp_options.substr(2, temp_options.size()) + "  ==>  " + arg.help_message + '\n';
+        help::usage_message[help::usage_message.size()-2] = ']';
         
         add_arguments(std::forward<Args>(args)...);
     }
@@ -521,12 +556,12 @@ public:
     //help message related functions
     void set_prog_name(const std::string& PROG_NAME)            //set the program name
     {
-        prog_name = PROG_NAME;
+        help::prog_name = PROG_NAME;
     }
 
     void set_description(const std::string& DESCRIPTION)        //set the description name
     {
-        description = DESCRIPTION;
+        help::description = "description : " + DESCRIPTION;
     }
 
     //output related function
@@ -537,12 +572,9 @@ public:
             std::string curr(argv[i]);
             if (curr == "-h" || curr == "--help")
             {
-                // print_help();
+                help::print_help();
                 exit(EXIT_SUCCESS);
             }
-        }
-        for (int i = 1; i < argc; i++)
-        {
             if (argv[i][0] == '-')
             {
                 std::string curr_flag(argv[i]);
@@ -561,14 +593,14 @@ public:
                         else    //otherwise this flag doesnt support '=' assignment, error
                         {
                             std::cerr << "ERROR: " << curr_flag.substr(0,ind) << " does not have action STORE, doesn't accept '='" << std::endl;
-                            // print_help();
+                            help::print_help();
                             exit(EXIT_FAILURE);
                         }
                     }
                     else //flag is not recognized
                     {
                         std::cerr << "ERROR: " << curr_flag.substr(0,ind) << " is not a recognized flag." << std::endl;
-                        // print_help();
+                        help::print_help();
                         exit(EXIT_FAILURE);
                     }
                 }
@@ -584,7 +616,7 @@ public:
                     else //otherwise its an error 
                     {
                         std::cerr << "ERROR: " << argv[i] << " is not a recognized argument" << std::endl;
-                        // print_help();
+                        help::print_help();
                         exit(EXIT_FAILURE);
                     }
                 }
@@ -600,75 +632,12 @@ public:
                 ACTION::requirement_not_met(b->accepted_flags[0]);
                 required_args.erase(b);
             }
-            // print_help();
+            help::print_help();
             exit(EXIT_FAILURE);
         }
     }
 };
 
-
-
-// // inline void parser::print_help()
-// // {
-// //     std::cout << "usage: " << prog_name << " ";
-
-
-// //     for (auto iter = known_arguments.begin(); iter != known_arguments.end(); ++iter)
-// //     {
-// //         if (iter->second->printed_already)
-// //             continue;
-
-// //         std::cout << "[";
-// //         for (int i = 0; i < iter->second->accepted_flags.size() - 1; i++)
-// //         {
-// //             std::cout << " " << iter->second->accepted_flags[i] << " |";
-// //         }
-// //         std::cout << " " << iter->second->accepted_flags.back();
-// //         std::cout << " ] ";
-// //         iter->second->printed_already = true;
-// //     }
-    
-// //     std::cout << std::endl << std::endl;
-// //     if (description != NO_DESCRIPTION)
-// //     {
-// //         std::cout << "description:" << std::endl;
-// //         std::cout << "  " << description << std::endl;
-// //         std::cout << std::endl << std::endl;
-// //     }
-
-
-// //     std::cout << "options:" << std::endl;
-// //     for (auto iter = known_arguments.begin(); iter != known_arguments.end(); ++iter)
-// //     {
-// //         if (!iter->second->printed_already)
-// //             continue;
-
-// //         argument* x = iter->second;
-// //         std::cout << "  ";
-// //         for (int i = 0; i < x->accepted_flags.size() - 1; i++)
-// //         {
-// //             std::cout << x->accepted_flags[i] << ", ";
-// //         }
-// //         std::cout << x->accepted_flags.back() << "   ==>   "; 
-// //         if (x->action == STORE)
-// //         {
-// //             std::cout << x->help_message << " (usage: ";
-// //             std::cout << x->accepted_flags[0] << "=[input] or ";
-// //             std::cout << x->accepted_flags[0] << " [input])" << std::endl << std::endl;
-// //         }
-// //         else if (x->action == APPEND)
-// //         {
-// //             std::cout << x->help_message << " (usage: ";
-// //             std::cout << x->accepted_flags[0] << " [input1] ... [inputk])" << std::endl << std::endl;
-// //         }
-// //         else 
-// //             std::cout << x->help_message << std::endl << std::endl;
-        
-// //         x->printed_already = false; 
-// //     }
-
-// //     std::cout << "  " << "-h, --help   ==>   generates this help/usage message" << std::endl;
-// // }
 
 }
 

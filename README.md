@@ -2,7 +2,6 @@ NOTE:
 - Working on rewriting unit tests for the new interface, adding more unit tests, and passing all the unit tests
 - documentation also needs to be updated
 
-
 An argparse implementation written in C++. This version is meant to use more object oriented design to do the parsing. Includes a test module that checks for proper behavior. The test module uses CMake with googletest to run.
 
 This is no longer a work in progress since it works for my purposes, but, I will continue to add more functionality for negative numbers and variability of number of args for a flag. Also going to make it so all errors are outputted before exiting instead of just the first one. 
