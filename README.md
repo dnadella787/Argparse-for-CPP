@@ -23,7 +23,7 @@ Add all allowable command line flags to the argument class. You can add in as ma
 
     void argument::set_nargs(int)
 
-Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it. Compiler will only allow you to set nargs for the action STORE_APPEND
+Set the number of additional arguments that should be included after any of the allowable flags. Note that n_args is set to 1 by default, to change this you need to use this function or set_action will also automatically change it. Compiler will only allow you to set nargs for the action APPEND
 
     void argument::set_requirement(bool)
 
@@ -31,7 +31,7 @@ Specified whether the argument must be specified on command line. The requiremen
 
     std::string argument::get<T>()
 
-Gives you the relavent output based on the initial action type specified. So if its ACTION::COUNT then get<int>() will return an integer of the count value. If it was ACTION::STORE get<std::string>() will return a string of the input for that flag. Note that for ACTION::STORE_APPEND the get function call must be of the form get<std::vector<T>>(). Not all types are allowed but for the ones that are not allowed the compiler will throw you warnings. 
+Gives you the relavent output based on the initial action type specified. So if its ACTION::COUNT then get<int>() will return an integer of the count value. If it was ACTION::STORE get<std::string>() will return a string of the input for that flag. Note that for ACTION::APPEND the get function call must be of the form get<std::vector<T>>(). Not all types are allowed but for the ones that are not allowed the compiler will throw you warnings. 
 
     bool argument::is_empty()
 
@@ -48,7 +48,7 @@ n_args is set to 1 and exactly one variable after any of the allowable flags is 
 
 If the flag is passed in, then the argument is stored as true and false for STORE_TRUE and STORE_FALSE respectively. n_args is set to 1 and any input after the flag will raise error.
 
-    STORE_APPEND
+    APPEND
 
 n_args number of inputs will be taken in after the acceptable flag and stored. If you try to use the flag more than once it will raise an error, will not overwrite. If less than n_arg inputs or more are passed in, an error will be raised.
 
@@ -103,7 +103,7 @@ Example Code:
         d.set_flags("-d", "--dracula");
         d.set_requirement(true);
 
-        argparser::argument<ACTION::STORE_APPEND> e("FIFTH ARGUMENT");
+        argparser::argument<ACTION::APPEND> e("FIFTH ARGUMENT");
         e.set_flags("-e", "--epsilon");
         e.set_nargs(3);
 
@@ -141,7 +141,7 @@ Example Code:
             }
         }
 
-        //e.get<std::string>() <-- this will throw a compiler warning since e is STORE_APPEND but no vector is specified
+        //e.get<std::string>() <-- this will throw a compiler warning since e is APPEND but no vector is specified
 
 
 

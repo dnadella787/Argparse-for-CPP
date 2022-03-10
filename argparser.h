@@ -243,13 +243,13 @@ public:
     }
 };
 
-class STORE_APPEND : public action_base 
+class APPEND : public action_base 
 {
 public:
     std::vector<std::string> data;
     int n_args;
 
-    STORE_APPEND()
+    APPEND()
     {
         n_args = 1;
     }
@@ -311,11 +311,11 @@ public:
     T get_helper(T*)
     {
         static_assert(is_std_vector<T>::value, 
-                       "ERROR: [get<T>()] T must be a vector for STORE_APPEND");
+                       "ERROR: [get<T>()] T must be a vector for APPEND");
         using S = typename T::value_type;
         static_assert(std::is_integral<S>::value ||
                       std::is_same<std::string,S>::value,
-                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, bool, or char for STORE_APPEND");
+                      "ERROR: [get<std::vector<T>>()] T must be numeric, string, bool, or char for APPEND");
 
         std::vector<S> ret_vector;
         std::transform(std::begin(data), 
@@ -395,8 +395,8 @@ private:
                   std::is_same<action, ACTION::STORE_TRUE>::value ||
                   std::is_same<action, ACTION::STORE_FALSE>::value ||
                   std::is_same<action, ACTION::STORE>::value ||
-                  std::is_same<action, ACTION::STORE_APPEND>::value,
-                  "action must be 'COUNT', 'STORE_TRUE', 'STORE_FALSE', 'STORE', or 'STORE_APPEND'" );
+                  std::is_same<action, ACTION::APPEND>::value,
+                  "action must be 'COUNT', 'STORE_TRUE', 'STORE_FALSE', 'STORE', or 'APPEND'" );
 
     /*
     ******* BASIC INTERNAL DATA *******
@@ -447,7 +447,7 @@ public:
 
     void set_nargs(const int& N_ARGS)                       //set the number of arguments to be processed
     {
-        static_assert(std::is_same<action, ACTION::STORE_APPEND>::value, "changing nargs only allowed for action STORE_APPEND");
+        static_assert(std::is_same<action, ACTION::APPEND>::value, "changing nargs only allowed for action APPEND");
         action_type->n_args = N_ARGS;
     }
     void set_help_message(const std::string& HELP_MESSAGE)  //set help message for the parser to use
@@ -456,10 +456,10 @@ public:
     }
     void set_requirement(const bool& REQUIREMENT)           //set the requirement, causes error if a required flag is not passed in
     { 
-        static_assert(std::is_same<action, ACTION::STORE_APPEND>::value ||
+        static_assert(std::is_same<action, ACTION::APPEND>::value ||
                       std::is_same<action, ACTION::STORE>::value || 
                       std::is_same<action, ACTION::COUNT>::value,
-                      "ERROR: set_requirement() can only be used on actions 'COUNT', 'STORE', or 'STORE_APPEND'");
+                      "ERROR: set_requirement() can only be used on actions 'COUNT', 'STORE', or 'APPEND'");
         is_required = REQUIREMENT;
     }
 
@@ -468,9 +468,9 @@ public:
     */
     bool is_empty()                                         
     {
-        static_assert(std::is_same<action, ACTION::STORE_APPEND>::value ||
+        static_assert(std::is_same<action, ACTION::APPEND>::value ||
                     std::is_same<action, ACTION::STORE>::value,
-                    "ERROR: is_empty() can only be used with actions 'STORE' or 'STORE_APPEND'");
+                    "ERROR: is_empty() can only be used with actions 'STORE' or 'APPEND'");
         return action_type->check_empty();
     }
 
